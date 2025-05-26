@@ -1,0 +1,119 @@
+.flashcard-functional {
+  width: 90%;
+  max-width: 600px;
+  background: #fefaf3;
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgba(178, 106, 64, 0.25);
+  padding: 32px 40px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #5b4031;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  border: 3px solid #b26a40;
+  margin: none;
+  margin-left: 12vw;
+  transition: box-shadow 0.3s ease;
+
+}
+
+.flashcard-functional:hover {
+  box-shadow: 0 16px 48px rgba(178, 106, 64, 0.4);
+}
+
+.flashcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fefaf3;
+
+}
+
+.flashcard-materia {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #a14400;
+  background-color: #ffe8cc;
+  padding: 6px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(160, 70, 0, 0.3);
+}
+.materia-icon{
+  background: transparent;
+}
+
+.flashcard-ver-todos {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #7a4f2a;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  transition:  0.25s;
+  
+}
+
+.flashcard-ver-todos:hover {
+  background-color: #f5e1d3;
+}
+
+.flashcard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  
+}
+
+.flashcard-question {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  background-color: #fefaf3;
+}
+
+.flashcard-answer {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #3d2e1f;
+  padding-left: 20px;
+  border-left: 4px solid #b26a40;
+  line-height: 1.6;
+  text-align: justify;
+  animation: fadeInAnswer 0.35s ease forwards;
+}
+
+@keyframes fadeInAnswer {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.flashcard-toggle-btn {
+  align-self: flex-end;
+  background-color: #b26a40;
+  color: #fff8ee;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(178, 106, 64, 0.4);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.flashcard-toggle-btn:hover {
+  background-color: #7a4f2a;
+  box-shadow: 0 8px 20px rgba(122, 79, 42, 0.6);
+}
+
+
+
+
+

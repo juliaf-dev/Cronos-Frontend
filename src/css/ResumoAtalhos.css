@@ -1,0 +1,54 @@
+.resumo-atalhos {
+  margin-top: 20px;
+}
+
+.resumo-atalhos h3 {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: #5d5d44; /* verde seco */
+  margin-bottom: 20px;
+  border-bottom: 3px solid #b26a40;
+  padding-bottom: 8px;
+}
+
+.atalhos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 22px;
+}
+
+.atalho-card {
+  background: #f7f4eb;
+  border-radius: 18px;
+  padding: 20px 16px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(178, 106, 64, 0.2);
+  color: #7a6345;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  white-space: normal;
+  text-decoration: none;
+}
+
+.atalho-card:hover {
+   background-color: #f5e1d3;
+  box-shadow: 0 8px 24px rgba(178, 106, 64, 0.4);
+}
+
+.atalho-titulo {
+  margin-bottom: 8px;
+  background: transparent;
+}
+
+.atalho-data {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #a08c71;
+    background: transparent;
+
+}

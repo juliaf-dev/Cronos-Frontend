@@ -1,0 +1,41 @@
+.notif-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notif-button:hover {
+  background-color: #b48b64;
+  box-shadow: 0 0 10px #b48b64;
+}
+
+.notif-button svg {
+  font-size: 1.5rem;
+  color: #6b5846;
+  transition: color 0.3s ease;
+}
+
+.notif-button:hover svg {
+  color: white;
+}
+
+/* Indicador vermelho de notificações */
+.notif-button::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: #d94e2b;
+  border-radius: 50%;
+  box-shadow: 0 0 3px #d94e2b;
+  display: block;
+}

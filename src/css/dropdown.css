@@ -1,0 +1,73 @@
+.materias-dropdown {
+  position: relative;
+  font-family: 'Rajdhani', sans-serif;
+  user-select: none;
+    background: transparent;
+
+}
+
+.dropdown-toggle {
+  background-color: transparent;
+  border: none; 
+  color: #7a533a;
+  padding: 8px 18px;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-toggle:hover {
+  background-color: #b06c49  ;
+  color: #f2f1e7;
+}
+
+.dropdown-icon {
+  font-size: 1.1rem;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background-color: #f2f1e7; /* bege claro */
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(138, 154, 91, 0.25);
+  min-width:5vh;
+  padding: 10px 0;
+}
+
+.materia-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 24px;
+  color: #7a533a;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  border-radius: 12px;
+  user-select: none;
+}
+
+.materia-item:hover {
+  background-color: #b06c49 ;
+  color: #f7f6f0;
+}
+
+.materia-icon {
+  font-size: 1.3rem;
+  color: #775139;
+  transition: color 0.25s ease;
+}
+
+.materia-item:hover .materia-icon {
+  color: #f7f6f0;
+}
+
+

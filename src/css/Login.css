@@ -1,0 +1,97 @@
+/* Container principal */
+.login-container {
+  background-color: #faf8f4; /* tom claro acolhedor */
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Caixa do formulário */
+.login-box {
+  background-color: #f7f4eb;
+  padding: 40px 36px;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(178, 106, 64, 0.15);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Título */
+.login-box h2 {
+  color: #5d5d44; /* verde seco */
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  font-weight: 700;
+}
+
+/* Erro */
+.error-message {
+  color: #c0392b;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+/* Campos do formulário */
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #7a6345;
+  font-size: 0.95rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ddd6c2;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #4a4a4a;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  border-color: #b26a40;
+  outline: none;
+}
+
+/* Botão */
+.login-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #b26a40;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-button:hover {
+  background-color: #8c4e2d;
+}
+
+/* Link para trocar de formulário */
+.toggle-form {
+  margin-top: 20px;
+  font-size: 0.95rem;
+  color: #5d5d44;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.3s;
+}
+
+.toggle-form:hover {
+  color: #b26a40;
+}
