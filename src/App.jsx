@@ -12,6 +12,7 @@ import Perfil from './pages/Perfil';
 import Suporte from './pages/Suporte';
 import ChatAssistente from './components/ChatAssistente';
 import Conteudo from './pages/Conteudos';
+import { API_BASE_URL } from './config/config';
 
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
     // Verificar autenticação ao carregar o app
     const checkAuth = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/auth/check', {
+        const response =await fetch(`${API_BASE_URL}/api/auth/check`,{
           credentials: 'include' // Importante para enviar o cookie
         });
         const data = await response.json();
@@ -50,7 +51,7 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:3000/api/auth/logout', {
+      await fetch(`${API_BASE_URL}/api/auth/logout`,{
         credentials: 'include' // Importante para enviar o cookie
       });
       setIsAuthenticated(false);
