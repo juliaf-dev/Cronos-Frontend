@@ -1,55 +1,153 @@
-// Adicione no topo do arquivo
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import './css/Main.css';
+import Main from './pages/Main';
+import Geografia from './pages/Materia/Geografia';
+import Historia from './pages/Materia/Historia';
+import Filosofia from './pages/Materia/Filosofia';
+import Sociologia from './pages/Materia/Sociologia';
+import Header from './components/Header';
+import Login from './pages/Login';
+import Perfil from './pages/Perfil';
+import Suporte from './pages/Suporte';
+import ChatAssistente from './components/ChatAssistente';
+import Conteudo from './pages/Conteudos';
+
+// Configuração da URL base da API
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-// Atualize a função checkAuth para lidar melhor com erros CORS
-const checkAuth = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest' // Ajuda com alguns proxies
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+  const [materiaAtual, setMateriaAtual] = useState(null);
+  const [paginaAtual, setPaginaAtual] = useState('main');
+  const [conteudoSelecionado, setConteudoSelecionado] = useState(null);
+
+  // Função para verificar autenticação
+  const checkAuth = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.isAuthenticated) {
-      setIsAuthenticated(true);
-      setUser(data.user);
-    }
-  } catch (error) {
-    console.error('Erro ao verificar autenticação:', error);
-    // Mostra feedback visual se o erro for de CORS
-    if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-      alert(`Erro de conexão com o servidor. Verifique se você está acessando de um domínio permitido: ${API_BASE_URL}`);
-    }
-  }
-};
-
-// Atualize a função handleLogout
-const handleLogout = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
+      const data = await response.json();
+      
+      if (data.isAuthenticated) {
+        setIsAuthenticated(true);
+        setUser(data.user);
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
+      if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+        alert(`Erro de conexão com o servidor. Verifique se você está acessando de um domínio permitido: ${API_BASE_URL}`);
+      }
     }
+  };
 
-    setIsAuthenticated(false);
-    setUser(null);
-  } catch (error) {
-    console.error('Erro ao fazer logout:', error);
-  }
-};
+  // Verificar autenticação ao carregar o componente
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  // Função para lidar com login
+  const handleLogin = (userData) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+  };
+
+  // Função para lidar com logout
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setIsAuthenticated(false);
+      setUser(null);
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
+
+  // Componente wrapper para as páginas autenticadas
+  const AuthenticatedApp = () => {
+    const navigate = useNavigate();
+
+    const voltarParaMain = () => {
+      setMateriaAtual(null);
+      navigate('/main');
+    };
+
+    const navegarParaMateria = (materia) => {
+      setMateriaAtual(materia.nome);
+      const nomeNormalizado = materia.nome
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+      navigate(`/materia/${nomeNormalizado}`);
+    };
+
+    const navegarParaConteudo = (conteudo) => {
+      setConteudoSelecionado(conteudo);
+      const nomeMateria = materiaAtual
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+      navigate(`/materia/${nomeMateria}/conteudo`, {
+        state: { conteudo },
+      });
+    };
+
+    return (
+      <>
+        <Header 
+          voltarParaMain={voltarParaMain}
+          navegarParaMateria={navegarParaMateria}
+          onLogout={handleLogout}
+          user={user}
+        />
+        <ChatAssistente/>
+        <Routes>
+          <Route path="/main" element={<Main navegarParaMateria={navegarParaMateria} />} />
+          <Route path="/materia/geografia" element={<Geografia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo}/>} />
+          <Route path="/materia/historia" element={<Historia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo} />} />
+          <Route path="/materia/filosofia" element={<Filosofia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo}/>} />
+          <Route path="/materia/sociologia" element={<Sociologia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo}/>} />
+          <Route path="*" element={<Navigate to="/main" replace />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/evolucao" element={<Perfil />} />
+          <Route path="/suporte" element={<Suporte />} />
+          <Route path="/materia/:materiaNome/conteudo" element={<Conteudo voltarParaMain={voltarParaMain} />} />
+        </Routes>
+      </>
+    );
+  };
+
+  return (
+    <Router>
+      <div className="app">
+        <Routes>
+          <Route path="/" element={isAuthenticated ? <Navigate to="/main" replace /> : <Login onLogin={handleLogin} />} />
+          <Route path="/*" element={isAuthenticated ? <AuthenticatedApp /> : <Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
