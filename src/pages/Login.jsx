@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../css/Login.css';
 
 function Login({ onLogin }) {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -12,29 +13,29 @@ function Login({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     try {
-     const baseUrl = process.env.REACT_APP_API_URL;
+      const endpoint = isLogin
+        ? 'http://localhost:5000/api/auth/login'
+        : 'http://localhost:5000/api/auth/register';
 
-const endpoint = isLogin
-  ? `${baseUrl}/api/auth/login`
-  : `${baseUrl}/api/auth/register`;
+      const body = isLogin
+        ? { email, password }
+        : { username, email, password };
 
-      const body = isLogin ? { email, password } : { username: email.split('@')[0], email, password };
-      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-        credentials: 'include' // Importante para receber o cookie
+        credentials: 'include',
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Algo deu errado');
       }
-      
+
       onLogin(data.user);
       navigate('/main');
     } catch (err) {
@@ -53,8 +54,8 @@ const endpoint = isLogin
               <label>Nome de Usuário</label>
               <input 
                 type="text" 
-                value={email.split('@')[0]} 
-                onChange={(e) => setEmail(e.target.value + '@exemplo.com')}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required 
               />
             </div>
