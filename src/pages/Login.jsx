@@ -9,19 +9,24 @@ function Login({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://cronos-backend-1.onrender.com';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
     try {
-      const endpoint = isLogin ? 'http://localhost:5000/api/auth/login' : 'http://localhost:5000/api/auth/register';
+      const endpoint = isLogin ? `${API_BASE_URL}/api/auth/login` : `${API_BASE_URL}/api/auth/register`;
       const body = isLogin ? { email, password } : { username: email.split('@')[0], email, password };
       
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest' // Importante para CORS
+        },
         body: JSON.stringify(body),
-        credentials: 'include' // Importante para receber o cookie
+        credentials: 'include' // Necessário para cookies/sessão
       });
       
       const data = await response.json();
@@ -33,7 +38,8 @@ function Login({ onLogin }) {
       onLogin(data.user);
       navigate('/main');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Erro ao conectar com o servidor');
+      console.error('Erro na requisição:', err);
     }
   };
 
@@ -49,7 +55,7 @@ function Login({ onLogin }) {
               <input 
                 type="text" 
                 value={email.split('@')[0]} 
-                onChange={(e) => setEmail(e.target.value + '@exemplo.com')}
+                onChange={(e) => setEmail(e.target.value + (e.target.value.includes('@') ? '' : '@exemplo.com'))}
                 required 
               />
             </div>
@@ -70,6 +76,7 @@ function Login({ onLogin }) {
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required 
+              minLength="6"
             />
           </div>
           <button type="submit" className="login-button">
