@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './css/Main.css';
 import Main from './pages/Main';
@@ -14,34 +14,33 @@ import ChatAssistente from './components/ChatAssistente';
 import Conteudo from './pages/Conteudos';
 import { API_BASE_URL } from './config/config';
 
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [materiaAtual, setMateriaAtual] = useState(null);
+
+  const [paginaAtual, setPaginaAtual] = useState('main');
   const [conteudoSelecionado, setConteudoSelecionado] = useState(null);
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
+  useEffect(() => {
+    // Verificar autenticação ao carregar o app
+    const checkAuth = async () => {
+      try {
+        const response =await fetch(`${API_BASE_URL}/api/auth/check`,{
+          credentials: 'include' // Importante para enviar o cookie
+        });
+        const data = await response.json();
+        
+        if (data.isAuthenticated) {
+          setIsAuthenticated(true);
+          setUser(data.user);
         }
-      });
-
-      if (!response.ok) throw new Error('Falha na autenticação');
-      
-      const data = await response.json();
-      setIsAuthenticated(data.isAuthenticated);
-      setUser(data.user);
-    } catch (error) {
-      console.error('Erro ao verificar autenticação:', error);
-    }
-  };
-
-  useEffect(() => { 
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+      }
+    };
+    
     checkAuth();
   }, []);
 
@@ -52,9 +51,8 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
+      await fetch(`${API_BASE_URL}/api/auth/logout`,{
+        credentials: 'include' // Importante para enviar o cookie
       });
       setIsAuthenticated(false);
       setUser(null);
@@ -63,39 +61,56 @@ function App() {
     }
   };
 
+  // Componente wrapper para as páginas autenticadas
   const AuthenticatedApp = () => {
     const navigate = useNavigate();
 
-    const navegarParaMateria = (materia) => {
-      const nomeFormatado = materia.nome.toLowerCase().replace(/\s+/g, '-');
-      setMateriaAtual(materia.nome);
-      navigate(`/materia/${nomeFormatado}`);
+      const voltarParaMain = () => {
+      setMateriaAtual(null);
+      navigate('/main');
     };
 
+    const navegarParaMateria = (materia) => {
+  setMateriaAtual(materia.nome);
+  const nomeNormalizado = materia.nome
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  navigate(`/materia/${nomeNormalizado}`);
+};
+
+
     const navegarParaConteudo = (conteudo) => {
-      setConteudoSelecionado(conteudo);
-      const nomeFormatado = materiaAtual.toLowerCase().replace(/\s+/g, '-');
-      navigate(`/materia/${nomeFormatado}/conteudo`, { state: { conteudo } });
-    };
+  setConteudoSelecionado(conteudo);  // atualiza o estado com o conteúdo selecionado
+  const nomeMateria = materiaAtual
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  navigate(`/materia/${nomeMateria}/conteudo` , {
+  state: { conteudo }, });
+};
+
 
     return (
       <>
         <Header 
-          user={user} 
+          voltarParaMain={voltarParaMain}
+          navegarParaMateria={navegarParaMateria}
           onLogout={handleLogout}
-          onNavigate={navegarParaMateria}
+          user={user}
         />
-        <ChatAssistente />
+        <ChatAssistente/>
         <Routes>
-          <Route path="/main" element={<Main onNavigate={navegarParaMateria} />} />
-          <Route path="/materia/geografia" element={<Geografia onNavigate={navegarParaConteudo} />} />
-          <Route path="/materia/historia" element={<Historia onNavigate={navegarParaConteudo} />} />
-          <Route path="/materia/filosofia" element={<Filosofia onNavigate={navegarParaConteudo} />} />
-          <Route path="/materia/sociologia" element={<Sociologia onNavigate={navegarParaConteudo} />} />
-          <Route path="/perfil" element={<Perfil user={user} />} />
-          <Route path="/suporte" element={<Suporte />} />
-          <Route path="/materia/:materia/conteudo" element={<Conteudo data={conteudoSelecionado} />} />
+          <Route path="/main" element={<Main navegarParaMateria={navegarParaMateria}  />} />
+          <Route path="/materia/geografia" element={<Geografia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo}/>} />
+          <Route path="/materia/historia" element={<Historia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo} />} />
+          <Route path="/materia/filosofia" element={<Filosofia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo}/>} />
+          <Route path="/materia/sociologia" element={<Sociologia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo}/>} />
           <Route path="*" element={<Navigate to="/main" replace />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/evolucao" element={<Perfil />} />
+          <Route path="/suporte" element={<Suporte />} />
+          <Route path="/materia/:materiaNome/conteudo" element={<Conteudo voltarParaMain={voltarParaMain} />} />
+
+
         </Routes>
       </>
     );
@@ -103,10 +118,12 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={isAuthenticated ? <Navigate to="/main" /> : <Login onLogin={handleLogin} />} />
-        <Route path="/*" element={isAuthenticated ? <AuthenticatedApp /> : <Navigate to="/" />} />
-      </Routes>
+      <div className="app">
+        <Routes>
+          <Route path="/" element={isAuthenticated ? <Navigate to="/main" replace /> : <Login onLogin={handleLogin} />} />
+          <Route path="/*" element={isAuthenticated ? <AuthenticatedApp /> : <Navigate to="/" replace />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
