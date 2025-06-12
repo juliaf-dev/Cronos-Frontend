@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/Login.css';
+import { API_BASE_URL } from '../config/config'; // importa a URL base correta
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -16,8 +17,8 @@ function Login({ onLogin }) {
 
     try {
       const endpoint = isLogin
-        ? 'http://localhost:5000/api/auth/login'
-        : 'http://localhost:5000/api/auth/register';
+        ? `${API_BASE_URL}/api/auth/login`
+        : `${API_BASE_URL}/api/auth/register`;
 
       const body = isLogin
         ? { email, password }
