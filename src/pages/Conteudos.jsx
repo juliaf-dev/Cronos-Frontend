@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../css/conteudos.css';
 import ChatAssistente from '../components/ChatAssistente';
+import { API_BASE_URL } from '../config/config'; 
 
 const Conteudo = ({ voltarParaMain }) => {
   const location = useLocation();
@@ -10,29 +11,36 @@ const Conteudo = ({ voltarParaMain }) => {
 
   const [conteudoGerado, setConteudoGerado] = useState('');
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
     const carregarConteudo = async () => {
-      if (!conteudo || !conteudo.nome || !conteudo.usuarioId) return;
+      if (!conteudo || !conteudo.nome) return;
 
       setCarregando(true);
+      setErro(null);
+
       try {
         const [materia, topico] = conteudo.nome.split(' - ');
 
         const response = await axios.post(
-          'https://seu-backend-api.com/api/contents/generate',
+          `${API_BASE_URL}/api/contents/generate`,
           {
             materia,
-            topico,
-            usuarioId: conteudo.usuarioId
-          },
-          { withCredentials: true } // importante para sessões
+            topico
+          }, 
+          { withCredentials: true }
         );
 
         setConteudoGerado(response.data.body);
+        
+        // Se o conteúdo veio do cache, mostra uma mensagem sutil
+        if (response.data.fromCache) {
+          console.log('Conteúdo carregado do cache');
+        }
       } catch (error) {
         console.error('Erro ao carregar conteúdo:', error);
-        setConteudoGerado('Erro ao carregar o conteúdo. Por favor, tente novamente.');
+        setErro('Erro ao carregar o conteúdo. Por favor, tente novamente.');
       } finally {
         setCarregando(false);
       }
@@ -60,6 +68,8 @@ const Conteudo = ({ voltarParaMain }) => {
       <div className="conteudo-texto">
         {carregando ? (
           <p>Carregando conteúdo...</p>
+        ) : erro ? (
+          <p className="erro">{erro}</p>
         ) : (
           <div dangerouslySetInnerHTML={{ __html: conteudoGerado }} />
         )}
