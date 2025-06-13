@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 import '../css/conteudos.css';
-import { gerarConteudoMateria } from '../services/geminiService';
 import ChatAssistente from '../components/ChatAssistente';
 
 const Conteudo = ({ voltarParaMain }) => {
@@ -13,13 +13,23 @@ const Conteudo = ({ voltarParaMain }) => {
 
   useEffect(() => {
     const carregarConteudo = async () => {
-      if (!conteudo || !conteudo.nome) return;
+      if (!conteudo || !conteudo.nome || !conteudo.usuarioId) return;
 
       setCarregando(true);
       try {
         const [materia, topico] = conteudo.nome.split(' - ');
-        const texto = await gerarConteudoMateria(materia, topico);
-        setConteudoGerado(texto);
+
+        const response = await axios.post(
+          'https://seu-backend-api.com/api/contents/generate',
+          {
+            materia,
+            topico,
+            usuarioId: conteudo.usuarioId
+          },
+          { withCredentials: true } // importante para sessões
+        );
+
+        setConteudoGerado(response.data.body);
       } catch (error) {
         console.error('Erro ao carregar conteúdo:', error);
         setConteudoGerado('Erro ao carregar o conteúdo. Por favor, tente novamente.');
@@ -43,9 +53,7 @@ const Conteudo = ({ voltarParaMain }) => {
 
   return (
     <div className="pagina-historica">
-      <button onClick={voltarParaMain} className="botao-voltar">
-        ← Voltar
-      </button>
+      <button onClick={voltarParaMain} className="botao-voltar">← Voltar</button>
 
       <h1>{conteudo.nome}</h1>
 
@@ -57,9 +65,7 @@ const Conteudo = ({ voltarParaMain }) => {
         )}
       </div>
 
-      <button className="botao-criar-resumo">
-        Criar Resumo
-      </button>
+      <button className="botao-criar-resumo">Criar Resumo</button>
 
       <ChatAssistente materiaTopico={conteudo.nome} />
     </div>
