@@ -7,7 +7,7 @@
   padding: 0.4rem 1rem;
   width: 220px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  transition: box-shadow 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .Seach:hover, .Seach:focus-within {
@@ -23,6 +23,8 @@
   color: #4a4a4a;
   font-family: 'Poppins', sans-serif;
   padding-right: 0.5rem;
+  width: 100%;
+  transition: all 0.3s ease;
 }
 
 .Seach button {
@@ -35,12 +37,97 @@
   justify-content: center;
   color: #8a6f4a;
   font-size: 1.2rem;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  min-width: 32px;
 }
 
 .Seach button:hover {
   color: #b48b64;
 }
-.icon{  
+
+.icon {  
   background: transparent;
+}
+
+/* Media Queries para Responsividade */
+@media screen and (max-width: 1024px) {
+  .Seach {
+    width: 200px;
+  }
+}
+
+@media screen and (max-width: 750px) {
+  .Seach {
+    width: 40px;
+    padding: 0.3rem;
+    justify-content: center;
+  }
+
+  .Seach.expanded {
+    width: 180px;
+    padding: 0.3rem 0.8rem;
+    justify-content: space-between;
+  }
+
+  .Seach input {
+    width: 0;
+    opacity: 0;
+    padding: 0;
+  }
+
+  .Seach.expanded input {
+    width: 100%;
+    opacity: 1;
+    padding-right: 0.5rem;
+  }
+
+  .Seach button {
+    font-size: 1.1rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .Seach {
+  background: none;
+  width: 30px;
+  box-shadow:none;
+  transition: all 0.3s ease;
+}
+
+  .Seach.expanded {
+    width: 160px;
+    padding: 0.25rem 0.6rem;
+     background: #e0ded9;
+  }
+
+  .Seach input {
+    font-size: 0.8rem;
+  }
+
+  .Seach button {
+    font-size: 1rem;
+    padding: 0.2rem;
+  }
+}
+
+@media screen and (max-width: 300px) {
+  .Seach {
+    width: 32px;
+    padding: 0.2rem;
+  }
+
+  .Seach.expanded {
+    width: 140px;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .Seach input {
+    font-size: 0.75rem;
+  }
+
+  .Seach button {
+    font-size: 0.9rem;
+    padding: 0.15rem;
+    min-width: 28px;
+  }
 }

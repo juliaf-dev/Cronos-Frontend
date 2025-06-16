@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/Login.css';
-import { API_BASE_URL } from '../config/config';
+import { API_BASE_URL } from '../config/config'; // importa a URL base correta
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -9,13 +9,11 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLogin, setIsLogin] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
 
     try {
       const endpoint = isLogin
@@ -43,8 +41,6 @@ function Login({ onLogin }) {
       navigate('/main');
     } catch (err) {
       setError(err.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -62,7 +58,6 @@ function Login({ onLogin }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required 
-                placeholder="Digite seu nome de usuário"
               />
             </div>
           )}
@@ -73,7 +68,6 @@ function Login({ onLogin }) {
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
               required 
-              placeholder="Digite seu email"
             />
           </div>
           <div className="form-group">
@@ -83,16 +77,10 @@ function Login({ onLogin }) {
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required 
-              placeholder="Digite sua senha"
-              minLength="6"
             />
           </div>
-          <button 
-            type="submit" 
-            className="login-button"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Carregando...' : (isLogin ? 'Entrar' : 'Cadastrar')}
+          <button type="submit" className="login-button">
+            {isLogin ? 'Entrar' : 'Cadastrar'}
           </button>
         </form>
         <p className="toggle-form" onClick={() => setIsLogin(!isLogin)}>

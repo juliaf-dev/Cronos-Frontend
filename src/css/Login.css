@@ -1,113 +1,120 @@
 /* Container principal */
 .login-container {
+  background-color: #faf8f4; /* tom claro acolhedor */
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  padding: 20px;
+  font-family: 'Poppins', sans-serif;
 }
 
 /* Caixa do formulário */
 .login-box {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background-color: #f7f4eb;
+  padding: 40px 36px;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(178, 106, 64, 0.15);
   width: 100%;
   max-width: 400px;
-  color: white;
+  text-align: center;
 }
 
 /* Título */
 .login-box h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #fff;
+  color: #5d5d44; /* verde seco */
   font-size: 1.8rem;
+  margin-bottom: 24px;
+  font-weight: 700;
 }
 
 /* Erro */
 .error-message {
-  color: #ff6b6b;
-  text-align: center;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  color: #c0392b;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
 }
 
 /* Campos do formulário */
 .form-group {
-  margin-bottom: 1.2rem;
+  margin-bottom: 20px;
+  text-align: left;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  color: #fff;
-  font-size: 0.9rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #7a6345;
+  font-size: 0.95rem;
 }
 
 .form-group input {
   width: 100%;
-  padding: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  padding: 10px 14px;
+  border: 1px solid #ddd6c2;
+  border-radius: 10px;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  background-color: #fff;
+  color: #4a4a4a;
+  transition: border-color 0.3s;
 }
 
 .form-group input:focus {
+  border-color: #b26a40;
   outline: none;
-  border-color: #4a90e2;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Botão */
 .login-button {
   width: 100%;
-  padding: 0.8rem;
-  background: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 8px;
+  padding: 12px;
   font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #b26a40;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.3s ease;
-  margin-top: 1rem;
+  transition: background-color 0.3s;
 }
 
 .login-button:hover {
-  background: #357abd;
-}
-
-.login-button:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
+  background-color: #8c4e2d;
 }
 
 /* Link para trocar de formulário */
 .toggle-form {
-  text-align: center;
-  margin-top: 1rem;
-  color: #4a90e2;
+  margin-top: 20px;
+  font-size: 0.95rem;
+  color: #5d5d44;
   cursor: pointer;
-  font-size: 0.9rem;
+  text-decoration: underline;
+  transition: color 0.3s;
 }
 
 .toggle-form:hover {
-  text-decoration: underline;
+  color: #b26a40;
 }
 
-/* Responsividade */
-@media (max-width: 480px) {
+/* Media Queries para Responsividade */
+@media screen and (max-width: 1024px) {
+  .login-container {
+    padding: 1rem;
+  }
+
   .login-box {
+    width: 90%;
+    max-width: 400px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .login-container {
+    padding: 0.5rem;
+  }
+
+  .login-box {
+    width: 95%;
     padding: 1.5rem;
   }
 
@@ -115,22 +122,34 @@
     font-size: 1.5rem;
   }
 
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
   .form-group input {
-    padding: 0.7rem;
+    padding: 0.6rem;
+    font-size: 0.9rem;
   }
 
   .login-button {
-    padding: 0.7rem;
+    padding: 0.6rem;
+    font-size: 0.9rem;
   }
 }
 
-@media (max-width: 320px) {
+@media screen and (max-width: 480px) {
+  .login-container {
+    padding: 0.25rem;
+  }
+
   .login-box {
+    width: 100%;
     padding: 1rem;
+    border-radius: 0;
   }
 
   .login-box h2 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
 
   .form-group label {
@@ -138,7 +157,16 @@
   }
 
   .form-group input {
-    padding: 0.6rem;
-    font-size: 0.9rem;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .login-button {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .toggle-form {
+    font-size: 0.8rem;
   }
 }
