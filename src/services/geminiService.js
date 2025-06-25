@@ -7,8 +7,21 @@ if (!API_KEY) {
   throw new Error("A chave da API Gemini não está definida. Verifique o arquivo .env.");
 }
 
+export const gerarConteudoMateria = async (materia, topico) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+    const prompt = `Gere um conteúdo educacional detalhado sobre ${topico} da matéria de ${materia}. 
+    O conteúdo deve ser estruturado em tópicos principais, com explicações claras e exemplos quando relevante. De enfaze em como pode cair no enem. Maximo de 200 palavras.  Formate o texto com tags <p> para parágrafos e <ul>/<li> para listas.`;
 
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Erro ao gerar conteúdo:", error);
+    return "Desculpe, houve um erro ao gerar o conteúdo. Por favor, tente novamente mais tarde.";
+  }
+};
 
 export const gerarQuestoesQuiz = async (materia, topico) => {
   try {

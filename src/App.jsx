@@ -12,6 +12,10 @@ import Perfil from './pages/Perfil';
 import Suporte from './pages/Suporte';
 import ChatAssistente from './components/ChatAssistente';
 import Conteudo from './pages/Conteudos';
+import Resumos from './pages/Resumos';
+import Flashcards from './pages/Flashcards';
+import Quiz from './pages/Quiz';
+import CriarResumo from './pages/CriarResumo';
 import { API_BASE_URL } from './config/config';
 
 
@@ -104,13 +108,15 @@ function App() {
           <Route path="/materia/historia" element={<Historia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo} />} />
           <Route path="/materia/filosofia" element={<Filosofia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo}/>} />
           <Route path="/materia/sociologia" element={<Sociologia voltarParaMain={voltarParaMain} navegarParaConteudo={navegarParaConteudo}/>} />
-          <Route path="*" element={<Navigate to="/main" replace />} />
+          <Route path="/materia/:materiaNome/conteudo" element={<Conteudo voltarParaMain={voltarParaMain} />} />
+          <Route path="/resumos" element={<Resumos />} />
+          <Route path="/flashcards" element={<Flashcards />} />
+          <Route path="/quiz" element={<Quiz />} />
+          <Route path="/criar-resumo" element={<CriarResumo />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/evolucao" element={<Perfil />} />
           <Route path="/suporte" element={<Suporte />} />
-          <Route path="/materia/:materiaNome/conteudo" element={<Conteudo voltarParaMain={voltarParaMain} />} />
-
-
+          <Route path="*" element={<Navigate to="/main" replace />} />
         </Routes>
       </>
     );

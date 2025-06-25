@@ -68,7 +68,16 @@ h1 {
   transform: translateY(-2px);
 }
 
-.botao-criar-resumo {
+.acoes-conteudo {
+  display: flex;
+  gap: 15px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.botao-criar-resumo,
+.botao-quiz {
   background-color: #5d5d44;
   color: #fffbe9;
   font-family: 'Poppins', sans-serif;
@@ -78,12 +87,29 @@ h1 {
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  margin-top: 24px;
   transition: background 0.3s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.botao-criar-resumo {
+  background-color: #5d5d44;
+}
+
+.botao-quiz {
+  background-color: #b26a40;
 }
 
 .botao-criar-resumo:hover {
   background-color: #4c4c36;
+  transform: translateY(-2px);
+}
+
+.botao-quiz:hover {
+  background-color: #94502f;
   transform: translateY(-2px);
 }
 
@@ -101,7 +127,15 @@ h1 {
     font-size: 1rem;
   }
 
-  .botao-criar-resumo {
+  .acoes-conteudo {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .botao-criar-resumo,
+  .botao-quiz {
     font-size: 0.95rem;
+    width: 100%;
   }
 }

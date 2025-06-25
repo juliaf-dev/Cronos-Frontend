@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FaFileAlt, FaQuestionCircle } from 'react-icons/fa';
 import '../css/conteudos.css';
 import ChatAssistente from '../components/ChatAssistente';
 import { API_BASE_URL } from '../config/config'; 
 
 const Conteudo = ({ voltarParaMain }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const conteudo = location.state?.conteudo;
 
   const [conteudoGerado, setConteudoGerado] = useState('');
@@ -49,6 +51,23 @@ const Conteudo = ({ voltarParaMain }) => {
     carregarConteudo();
   }, [conteudo]);
 
+  const irParaCriarResumo = () => {
+    navigate('/criar-resumo', { 
+      state: { 
+        conteudo,
+        conteudoGerado 
+      } 
+    });
+  };
+
+  const irParaQuiz = () => {
+    navigate('/quiz', { 
+      state: { 
+        conteudo 
+      } 
+    });
+  };
+
   if (!conteudo) {
     return (
       <div className="pagina-historica">
@@ -75,7 +94,14 @@ const Conteudo = ({ voltarParaMain }) => {
         )}
       </div>
 
-      <button className="botao-criar-resumo">Criar Resumo</button>
+      <div className="acoes-conteudo">
+        <button onClick={irParaCriarResumo} className="botao-criar-resumo">
+          <FaFileAlt /> Criar Resumo
+        </button>
+        <button onClick={irParaQuiz} className="botao-quiz">
+          <FaQuestionCircle /> Fazer Quiz
+        </button>
+      </div>
 
       <ChatAssistente materiaTopico={conteudo.nome} />
     </div>

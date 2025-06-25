@@ -86,30 +86,34 @@
   }
 }
 
-@media screen and (max-width: 600px) {
-  .Seach {
-  background: none;
-  width: 30px;
-  box-shadow:none;
-  transition: all 0.3s ease;
-}
+@media screen and (max-width: 600px) {  .Seach {
+    width: 40px;
+    padding: 0.3rem;
+    justify-content: center;
+  }
 
   .Seach.expanded {
-    width: 160px;
-    padding: 0.25rem 0.6rem;
-     background: #e0ded9;
+    width: 180px;
+    padding: 0.3rem 0.8rem;
+    justify-content: space-between;
   }
 
   .Seach input {
-    font-size: 0.8rem;
+    width: 0;
+    opacity: 0;
+    padding: 0;
+  }
+
+  .Seach.expanded input {
+    width: 100%;
+    opacity: 1;
+    padding-right: 0.5rem;
   }
 
   .Seach button {
-    font-size: 1rem;
-    padding: 0.2rem;
+    font-size: 1.1rem;
   }
 }
-
 @media screen and (max-width: 300px) {
   .Seach {
     width: 32px;

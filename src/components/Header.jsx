@@ -16,6 +16,16 @@ const Header = ({ navegarParaMateria, voltarParaMain, user, onLogout }) => {
 
   const toggleMenu = () => setMenuAberto(!menuAberto);
 
+  const irParaFlashcards = () => {
+    navigate('/flashcards');
+    setMenuAberto(false);
+  };
+
+  const irParaResumos = () => {
+    navigate('/resumos');
+    setMenuAberto(false);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuAberto && menuRef.current && !menuRef.current.contains(event.target) &&
@@ -32,6 +42,21 @@ const Header = ({ navegarParaMateria, voltarParaMain, user, onLogout }) => {
     <header className="navbar">
       <div className="nav-left">
         <img className="logo" src={logo} alt="logo do projeto" onClick={voltarParaMain} />
+        
+        {/* Navegação desktop */}
+        <div className="desktop-nav">
+          <div className="nav-button">
+            <MateriasDropdown navegarParaMateria={navegarParaMateria} />
+          </div>
+          <button className="nav-button" onClick={irParaFlashcards}>
+            <FaLayerGroup />
+            <span>Flashcards</span>
+          </button>
+          <button className="nav-button" onClick={irParaResumos}>
+            <FaFileAlt />
+            <span>Resumos</span>
+          </button>
+        </div>
       </div>
 
       <div className="nav-right">
@@ -43,10 +68,17 @@ const Header = ({ navegarParaMateria, voltarParaMain, user, onLogout }) => {
         <UserDropdown onLogout={onLogout} />
       </div>
 
+      {/* Menu mobile */}
       <div className={`mobile-nav ${menuAberto ? 'active' : ''}`} ref={menuRef}>
-        <MateriasDropdown navegarParaMateria={navegarParaMateria} />
-        <button><FaLayerGroup /> Flashcards</button>
-        <button><FaFileAlt /> Resumos</button>
+        <div className="nav-button">
+          <MateriasDropdown navegarParaMateria={navegarParaMateria} />
+        </div>
+        <button className="nav-button" onClick={irParaFlashcards}>
+          <FaLayerGroup /> Flashcards
+        </button>
+        <button className="nav-button" onClick={irParaResumos}>
+          <FaFileAlt /> Resumos
+        </button>
       </div>
     </header>
   );

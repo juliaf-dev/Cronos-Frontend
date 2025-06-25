@@ -30,6 +30,30 @@
   align-items: center;
 }
 
+.nav-button {
+  background: none;
+  border: none;
+  color: #7a533a;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+  background-color: #b06c49;
+  color: #f7f6f0;
+}
+
+.nav-button span {
+  margin-left: 0.25rem;
+}
+
 .nav-right {
   display: flex;
   align-items: center;
@@ -198,7 +222,10 @@
   }
 
   .user-menu {
-    padding: 0.5rem;
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-top: 0.5rem;
   }
 
   .user-menu-item {
@@ -209,14 +236,11 @@
 
 @media screen and (max-width: 480px) {
   .header {
-    flex-direction: column;
-    padding: 0.5rem;
-    gap: 0.5rem;
+    padding: 0.3rem;
   }
 
   .header-left, .header-right {
-    width: 100%;
-    justify-content: center;
+    gap: 0.3rem;
   }
 
   .logo {
@@ -224,9 +248,7 @@
   }
 
   .user-menu {
-    width: 100%;
-    left: 0;
-    right: 0;
+    margin-top: 0.3rem;
   }
 
   .user-menu-item {
@@ -237,8 +259,7 @@
 
 @media screen and (max-width: 300px) {
   .header {
-    padding: 0.25rem;
-    gap: 0.25rem;
+    padding: 0.2rem;
   }
 
   .logo {
@@ -246,31 +267,40 @@
   }
 
   .header-left, .header-right {
-    gap: 0.25rem;
+    gap: 0.2rem;
   }
 
   .user-menu {
-    padding: 0.25rem;
+    margin-top: 0.2rem;
   }
 
   .user-menu-item {
     padding: 0.3rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
+}
 
-  .header-button {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.75rem;
-  }
+.header-button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.header-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 @media screen and (max-width: 600px) {
   .navbar {
-    padding: 0.5rem;
+    padding: 0.8rem 1rem;
   }
 
   .nav-left {
-    gap: 0.5rem;
+    gap: 1rem;
   }
 
   .logo {
@@ -283,20 +313,19 @@
 
   .nav-right {
     gap: 0.5rem;
-    order: 1;
   }
 
   .mobile-nav {
+    display: none;
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    background-color: #f2f1e7;
+    background-color: #f7f6f0;
     padding: 1rem;
-    display: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     flex-direction: column;
-    gap: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    gap: 1rem;
     z-index: 1000;
   }
 
@@ -305,71 +334,75 @@
   }
 
   .mobile-nav button {
-    width: 100%;
-    padding: 0.5rem;
-    text-align: left;
     background: none;
     border: none;
     color: #7a533a;
-    font-size: 0.9rem;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: left;
   }
 
   .mobile-nav button:hover {
     background-color: #b06c49;
-    color: #f2f1e7;
+    color: #f7f6f0;
   }
 
   .menu-hamburguer {
     display: block;
-    order: 2;
+    background: none;
+    border: none;
+    color: #7a533a;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
   }
 
-  /* Reorganização dos elementos */
   .nav-right {
-    display: flex;
-    align-items: center;
     gap: 0.5rem;
   }
 
   .nav-right > * {
-    order: 0;
+    margin-left: 0.5rem;
   }
 
-  /* Posicionamento específico dos elementos */
   .nav-right .Seach {
-    order: 1;
+    display: none;
   }
 
   .nav-right .materias-dropdown {
-    order: 2;
+    display: none;
   }
 
   .nav-right .notif-icon {
-    order: 3;
+    display: none;
   }
 
   .nav-right .user-dropdown {
-    order: 4;
+    display: block;
   }
 
-  /* Ajuste do dropdown de matérias */
   .materias-dropdown .dropdown-toggle {
-    padding: 6px 12px;
-    font-size: 0.9rem;
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .materias-dropdown .dropdown-menu {
-    right: 0;
-    left: auto;
+    position: static;
+    box-shadow: none;
   }
 }
 
 @media screen and (max-width: 480px) {
   .navbar {
-    padding: 0.25rem;
+    padding: 0.6rem 0.8rem;
   }
 
   .logo {
@@ -377,31 +410,29 @@
   }
 
   .nav-right {
-    gap: 0.25rem;
+    gap: 0.3rem;
   }
 
   .materias-dropdown .dropdown-toggle {
-    padding: 4px 8px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
 }
 
 @media screen and (max-width: 300px) {
   .navbar {
-    padding: 0.15rem;
+    padding: 0.5rem;
   }
 
   .logo {
-    height: 25px;
+    height: 28px;
   }
 
   .nav-right {
-    gap: 0.15rem;
+    gap: 0.2rem;
   }
 
   .materias-dropdown .dropdown-toggle {
-    padding: 3px 6px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
 }
 
