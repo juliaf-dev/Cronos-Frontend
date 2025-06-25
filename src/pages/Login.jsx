@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '../css/Login.css';
 import { API_BASE_URL } from '../config/config'; // importa a URL base correta
 
@@ -10,6 +10,17 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('confirm') === 'success') {
+      setError('E-mail confirmado com sucesso! Faça login.');
+    }
+    if (params.get('confirm') === 'fail') {
+      setError('Falha ao confirmar e-mail. Tente novamente.');
+    }
+  }, [location.search]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import './css/Main.css';
 import Main from './pages/Main';
 import Geografia from './pages/Materia/Geografia';
@@ -122,10 +122,35 @@ function App() {
     );
   };
 
+  const ConfirmEmailPage = () => {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    useEffect(() => {
+      const token = searchParams.get('token');
+      const confirmar = async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/auth/confirm?token=${token}`);
+          const data = await res.json();
+          if (res.ok) {
+            navigate('/?confirm=success');
+          } else {
+            navigate('/?confirm=fail');
+          }
+        } catch {
+          navigate('/?confirm=fail');
+        }
+      };
+      if (token) confirmar();
+      else navigate('/?confirm=fail');
+    }, [searchParams, navigate]);
+    return <div>Confirmando e-mail...</div>;
+  };
+
   return (
     <Router>
       <div className="app">
         <Routes>
+          <Route path="/confirmar" element={<ConfirmEmailPage />} />
           <Route path="/" element={isAuthenticated ? <Navigate to="/main" replace /> : <Login onLogin={handleLogin} />} />
           <Route path="/*" element={isAuthenticated ? <AuthenticatedApp /> : <Navigate to="/" replace />} />
         </Routes>
