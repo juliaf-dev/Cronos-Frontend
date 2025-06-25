@@ -27,7 +27,7 @@ export const gerarQuestoesQuiz = async (materia, topico) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    const prompt = `Gere 10 questões de múltipla escolha sobre ${topico} na matéria de ${materia}.
+    const prompt = `Gere 5 questões de múltipla escolha sobre ${topico} na matéria de ${materia}.
     Cada questão deve ter:
     - Uma pergunta clara e objetiva que possa vir a virar um flashcard
     - 4 alternativas (A, B, C, D)
