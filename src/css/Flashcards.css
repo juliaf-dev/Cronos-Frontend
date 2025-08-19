@@ -1,0 +1,506 @@
+.flashcard-functional {
+  width: 90%;
+  max-width: 600px;
+  background: #fefaf3;
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgba(178, 106, 64, 0.25);
+  padding: 32px 40px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #5b4031;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  border: 3px solid #b26a40;
+  margin: 0 auto;
+  transition: box-shadow 0.3s ease;
+}
+
+.flashcard-functional:hover {
+  box-shadow: 0 16px 48px rgba(178, 106, 64, 0.4);
+}
+
+.flashcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fefaf3;
+}
+
+.flashcard-materia {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #a14400;
+  background-color: #ffe8cc;
+  padding: 6px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(160, 70, 0, 0.3);
+}
+
+.materia-icon {
+  background: transparent;
+}
+
+.flashcard-ver-todos {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #7a4f2a;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  transition: 0.25s;
+}
+
+.flashcard-ver-todos:hover {
+  background-color: #f5e1d3;
+}
+
+.flashcard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ESTILOS ESPECÍFICOS DA PÁGINA FLASHCARDS - (NÃO DOS CARDS INDIVIDUAIS) */
+
+.flashcards-page {
+  min-height: 100vh;
+  background-color: transparent; /* Fundo transparente para a página */
+  padding: 20px;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.flashcards-container {
+  max-width: 1200px; /* Mantém o max-width original para o container geral */
+  margin: 0 auto;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.9); /* Fundo branco semi-transparente */
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(178, 106, 64, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.flashcards-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f5e1d3;
+}
+
+.flashcard-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c387e;
+  margin-bottom: 24px;
+}
+
+.flashcards-header h1 { /* Redefinindo para o novo flashcard-title */
+  color: #5b4031;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.btn-voltar {
+  background: linear-gradient(135deg, #b26a40 0%, #7a4f2a 100%);
+  color: #fff8ee;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(178, 106, 64, 0.3);
+}
+
+.btn-voltar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(178, 106, 64, 0.4);
+}
+
+.btn-adicionar {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.btn-adicionar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+}
+
+/* Lista de Pastas */
+.pastas-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Mantendo um tamanho razoável */
+  gap: 20px; /* Espaçamento moderado */
+  margin-top: 30px;
+  padding: 10px;
+}
+
+.pasta-item {
+  background: #fefaf3; /* Fundo semelhante ao flashcard */
+  border: 3px solid #b26a40; /* Borda semelhante ao flashcard */
+  border-radius: 24px; /* Cantos arredondados como o flashcard */
+  padding: 24px; /* Padding ajustado para ser visível, mas não excessivo */
+  cursor: pointer;
+  transition: box-shadow 0.3s ease; /* Transição de sombra como o flashcard */
+  display: flex;
+  flex-direction: column; /* Organiza conteúdo verticalmente */
+  align-items: center; /* Centraliza itens */
+  text-align: center; /* Centraliza texto */
+  gap: 18px; /* Espaçamento entre itens internos */
+  box-shadow: 0 8px 24px rgba(178, 106, 64, 0.15); /* Sombra mais próxima do flashcard */
+}
+
+.pasta-item:hover {
+  transform: translateY(-2px); /* Elevação sutil */
+  box-shadow: 0 12px 36px rgba(178, 106, 64, 0.3); /* Sombra mais pronunciada no hover */
+  border-color: #7a4f2a; /* Borda um pouco mais escura no hover */
+}
+
+.pasta-icone {
+  font-size: 2.5rem; /* Tamanho do ícone para equilíbrio */
+  color: #a14400; /* Cor primária */
+  background: #ffe8cc; /* Fundo suave para o ícone */
+  padding: 15px; /* Padding ajustado */
+  border-radius: 12px; /* Cantos ajustados */
+  box-shadow: 0 4px 10px rgba(160, 70, 0, 0.2); /* Sombra para o ícone */
+}
+
+.pasta-info h3 {
+  color: #5b4031; /* Cor de texto mais próxima do flashcard */
+  font-size: 1.4rem; /* Tamanho para o título */
+  font-weight: 700;
+  margin: 0; /* Remove margem padrão */
+}
+
+.pasta-info p {
+  color: #7a4f2a; /* Cor de texto semelhante ao flashcard */
+  font-size: 1.1rem;
+  margin: 8px 0 0 0; /* Margem ajustada */
+}
+
+.pasta-status {
+  display: flex;
+  gap: 10px; /* Espaçamento ajustado */
+  flex-wrap: wrap;
+  margin-top: 15px; /* Margem superior para separar do info */
+  justify-content: center; /* Centralizar os status */
+}
+
+.status-revisado, .status-nao-revisado {
+  position: relative; /* Necessário para posicionar o tooltip */
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Espaçamento entre ícone e número */
+  font-size: 0.9rem; /* Tamanho da fonte para o número */
+  font-weight: 500;
+  padding: 4px 8px; /* Padding ajustado para ser mais compacto */
+  border-radius: 6px;
+  border: 1px solid; /* Borda sutil */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  overflow: visible; /* Garante que o tooltip não seja cortado */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); /* Sombra sutil para os status */
+}
+
+.status-revisado:hover, .status-nao-revisado:hover {
+  transform: translateY(-1px); /* Elevação sutil no hover */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra no hover */
+}
+
+.status-revisado {
+  color: #27ae60; /* Cor verde para revisado */
+  background: #e6faed; /* Fundo mais claro para revisado */
+  border-color: #27ae60;
+}
+
+.status-nao-revisado {
+  color: #e74c3c; /* Cor vermelha para não revisado */
+  background: #ffe6e6; /* Fundo mais claro para não revisado */
+  border-color: #e74c3c;
+}
+
+/* Estilo do Tooltip (Flutuador) */
+.status-revisado::after, .status-nao-revisado::after {
+  content: attr(data-tooltip); /* Pega o texto do atributo data-tooltip */
+  position: absolute;
+  bottom: 120%; /* Posição acima do elemento */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333; /* Fundo do tooltip */
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  white-space: nowrap; /* Impede que o texto quebre linha */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 10; /* Garante que fique acima de outros elementos */
+  pointer-events: none; /* Permite clicar no elemento abaixo do tooltip */
+}
+
+.status-revisado:hover::after, .status-nao-revisado:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.status-revisado::before, .status-nao-revisado::before {
+  content: '';
+  position: absolute;
+  bottom: 115%; /* Posição do triângulo */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent; /* Triângulo apontando para baixo */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.status-revisado:hover::before, .status-nao-revisado:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.flashcard-navegacao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  padding: 20px;
+  background: #fefaf3;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(178, 106, 64, 0.1);
+}
+
+.btn-navegacao {
+  background: linear-gradient(135deg, #b26a40 0%, #7a4f2a 100%);
+  color: #fff8ee;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(178, 106, 64, 0.3);
+}
+
+.btn-navegacao:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(178, 106, 64, 0.4);
+}
+
+.btn-navegacao:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Formulário de Flashcard */
+.formulario-flashcard {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #fff 0%, #fefaf3 100%);
+  border: 3px solid #b26a40;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 15px 50px rgba(178, 106, 64, 0.3);
+  z-index: 1000;
+}
+
+.formulario-flashcard h2 {
+  color: #5b4031;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #5b4031;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #f5e1d3;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: 'Rajdhani', sans-serif;
+  background: #fff;
+  color: #3d2e1f;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+  outline: none;
+  border-color: #b26a40;
+  box-shadow: 0 0 0 3px rgba(178, 106, 64, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 25px;
+}
+
+.btn-cancelar, .btn-salvar {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+}
+
+.btn-cancelar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+}
+
+.btn-salvar {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.btn-salvar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+}
+
+/* Responsividade */
+@media screen and (max-width: 768px) {
+  .flashcards-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .flashcards-header h1 {
+    font-size: 2rem;
+  }
+
+  .pastas-lista {
+    grid-template-columns: 1fr;
+  }
+
+  .pasta-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .pasta-status {
+    justify-content: center;
+  }
+
+  .flashcard-card {
+    padding: 20px;
+  }
+
+  .flashcard-info {
+    justify-content: center;
+  }
+
+  .flashcard-acoes {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .flashcard-navegacao {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .formulario-flashcard {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .flashcards-container {
+    padding: 15px;
+  }
+
+  .flashcards-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .pasta-item {
+    padding: 20px;
+  }
+
+  .pasta-icone {
+    font-size: 2rem;
+    padding: 12px;
+  }
+
+  .flashcard-card {
+    padding: 15px;
+  }
+
+  .flashcard-pergunta h3, .flashcard-resposta h3 {
+    font-size: 1.2rem;
+  }
+
+  .flashcard-pergunta p, .flashcard-resposta p {
+    font-size: 1rem;
+  }
+}

@@ -1,10 +1,10 @@
 // src/components/Dropdown.jsx
-import { useState, useEffect, useRef } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
-import '../css/dropdown.css';
+import { useState, useEffect, useRef } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronDown, faChevronUp, faUserCircle } from "@fortawesome/free-solid-svg-icons";
+import "../css/dropdown.css";
 
-const Dropdown = ({ titulo = "Selecionar", itens = [], onItemClick }) => {
+const Dropdown = ({ titulo = "Selecionar", avatar = false, itens = [], onItemClick }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef();
   const toggleRef = useRef();
@@ -29,8 +29,8 @@ const Dropdown = ({ titulo = "Selecionar", itens = [], onItemClick }) => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   return (
@@ -40,7 +40,9 @@ const Dropdown = ({ titulo = "Selecionar", itens = [], onItemClick }) => {
         onClick={toggleDropdown}
         ref={toggleRef}
       >
-        {titulo}
+        {/* Se avatar for true, mostra um ícone do usuário antes do título */}
+        {avatar && <FontAwesomeIcon icon={faUserCircle} className="avatar-icon" />}
+        <span>{titulo}</span>
         <FontAwesomeIcon
           icon={isOpen ? faChevronUp : faChevronDown}
           className="dropdown-icon"
@@ -55,7 +57,9 @@ const Dropdown = ({ titulo = "Selecionar", itens = [], onItemClick }) => {
               className="materia-item"
               onClick={() => handleItemClick(item)}
             >
-              {item.icone && <FontAwesomeIcon icon={item.icone} className="materia-icon" />}
+              {item.icone && (
+                <FontAwesomeIcon icon={item.icone} className="materia-icon" />
+              )}
               <span>{item.nome}</span>
             </div>
           ))}

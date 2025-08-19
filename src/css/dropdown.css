@@ -5,7 +5,20 @@
     background: transparent;
 
 }
+.avatar-icon {
+  font-size: 1.5rem;   /* maior que os outros ícones */
+  color: #7a533a;
+  transition: color 0.25s ease;
+}
 
+.dropdown-toggle:hover .avatar-icon {
+  color: #f2f1e7;
+}
+
+/* Para alinhar título e avatar */
+.dropdown-toggle span {
+  font-weight: 700;
+}
 .dropdown-toggle {
   background-color: transparent;
   border: none; 

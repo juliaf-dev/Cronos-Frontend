@@ -1,3 +1,4 @@
+/*
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
@@ -80,3 +81,4 @@ export const gerarRespostaIA = async (pergunta, materia = null, topico = null) =
     throw error;
   }
 };
+*/

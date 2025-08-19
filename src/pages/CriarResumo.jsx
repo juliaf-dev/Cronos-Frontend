@@ -1,176 +1,224 @@
+// src/pages/CriarResumo.jsx
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { FaSave, FaArrowLeft, FaQuestionCircle } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { API_BASE_URL } from '../config/config';
 import '../css/CriarResumo.css';
 
-const CriarResumo = () => {
-  const location = useLocation();
+function CriarResumo() {
   const navigate = useNavigate();
-  const { conteudo, conteudoGerado, resumoParaEditar } = location.state || {};
+  const location = useLocation();
+  const conteudoState = location.state?.conteudo;
+  const vindoDoConteudo = !!conteudoState;
 
+  const [materiasDisponiveis, setMateriasDisponiveis] = useState([]);
+  const [materiaSelecionada, setMateriaSelecionada] = useState({ id: null, nome: '' });
   const [titulo, setTitulo] = useState('');
-  const [conteudoResumo, setConteudoResumo] = useState('');
-  const [mensagemSucesso, setMensagemSucesso] = useState('');
-  const [salvando, setSalvando] = useState(false);
+  const [corpo, setCorpo] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
+  const token = localStorage.getItem('accessToken');
+
+  /**
+   * Quando vem de um conteúdo → busca a matéria vinculada
+   */
   useEffect(() => {
-    if (resumoParaEditar) {
-      setTitulo(resumoParaEditar.titulo);
-      setConteudoResumo(resumoParaEditar.conteudo);
-    } else if (conteudo) {
-      setTitulo(`${conteudo.nome} - Resumo`);
-    }
-  }, [resumoParaEditar, conteudo]);
+    if (!vindoDoConteudo || !conteudoState) return;
 
+    setTitulo(conteudoState.tituloSugerido || '');
+    setCorpo('');
+
+    const carregarMateria = async () => {
+      try {
+        let url = null;
+        let headers = {};
+
+        if (conteudoState.materiaId) {
+          url = `${API_BASE_URL}/api/materias/${conteudoState.materiaId}`;
+          headers = { Authorization: `Bearer ${token}` };
+        } else if (conteudoState.subtopicoId) {
+          url = `${API_BASE_URL}/api/subtopicos/${conteudoState.subtopicoId}/materia`;
+        }
+
+        if (!url) return console.warn('⚠️ Nenhum ID de matéria ou subtopico fornecido no conteúdo.');
+
+        const response = await fetch(url, { headers });
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) throw new Error(data.message || 'Erro ao carregar a matéria vinculada');
+
+        setMateriaSelecionada({
+          id: data.data.id || data.data.materia_id,
+          nome: data.data.nome || data.data.nome_materia || 'Matéria'
+        });
+      } catch (err) {
+        console.error('❌ Erro ao carregar a matéria vinculada:', err);
+        setError('Erro ao carregar a matéria vinculada.');
+      }
+    };
+
+    carregarMateria();
+  }, [vindoDoConteudo, conteudoState, token]);
+
+  /**
+   * Carrega todas as matérias (quando não vem de conteúdo)
+   */
   useEffect(() => {
-    if (mensagemSucesso && !resumoParaEditar) {
-      const timer = setTimeout(() => {
-        irParaQuiz();
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [mensagemSucesso, resumoParaEditar]);
+    if (vindoDoConteudo) return;
 
-  const handleSalvar = () => {
-    if (!titulo.trim() || !conteudoResumo.trim()) {
-      alert('Por favor, preencha todos os campos');
+    const fetchMaterias = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/materias`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) throw new Error(data.message || 'Erro ao carregar matérias');
+
+        setMateriasDisponiveis(data.data);
+      } catch (err) {
+        console.error('❌ Erro ao buscar todas matérias:', err);
+        setError('Erro ao carregar matérias.');
+      }
+    };
+
+    fetchMaterias();
+  }, [vindoDoConteudo, token]);
+
+  /**
+   * Salvar resumo
+   */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setError('');
+
+    if (!titulo || !corpo || !materiaSelecionada.id) {
+      setError('Preencha todos os campos obrigatórios.');
       return;
     }
 
-    setSalvando(true);
-    
-    const novoResumo = {
-      id: resumoParaEditar ? resumoParaEditar.id : Date.now(),
-      titulo,
-      conteudo: conteudoResumo,
-      materia: conteudo ? conteudo.nome.split(' - ')[0] : '',
-      periodo: conteudo ? conteudo.nome.split(' - ')[1] : '',
-      dataCriacao: resumoParaEditar ? resumoParaEditar.dataCriacao : new Date().toISOString(),
-      dataModificacao: new Date().toISOString()
-    };
+    try {
+      const resumoPayload = {
+        materia_id: materiaSelecionada.id,
+        ...(conteudoState?.id && { conteudo_id: conteudoState.id }),
+        titulo,
+        corpo
+      };
 
-    // Salvar no localStorage
-    const resumosExistentes = JSON.parse(localStorage.getItem('resumos') || '[]');
-    let novosResumos;
-    
-    if (resumoParaEditar) {
-      novosResumos = resumosExistentes.map(r => r.id === resumoParaEditar.id ? novoResumo : r);
-    } else {
-      novosResumos = [...resumosExistentes, novoResumo];
+      const response = await fetch(`${API_BASE_URL}/api/resumos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(resumoPayload),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Erro ao criar resumo');
+
+      setMessage('Resumo criado com sucesso!');
+
+      setTimeout(() => {
+        if (vindoDoConteudo) {
+          // 🚀 Navega para o quiz já com resumo e conteudo padronizado
+          navigate('/quiz', {
+            state: {
+              resumo: data.data, // {id, materia_id, titulo, corpo}
+              conteudo: {
+                conteudo_id: conteudoState.id,
+                materia_id: conteudoState.materia_id,
+                topico_id: conteudoState.topico_id,
+                subtopico_id: conteudoState.subtopico_id,
+                titulo: conteudoState.titulo || conteudoState.subtopico_nome,
+              },
+            },
+          });
+        } else {
+          navigate('/resumos');
+        }
+      }, 1000);
+    } catch (err) {
+      console.error('❌ Erro ao salvar resumo:', err);
+      setError(err.message || 'Erro ao criar resumo.');
     }
-
-    localStorage.setItem('resumos', JSON.stringify(novosResumos));
-
-    setMensagemSucesso(resumoParaEditar ? 'Resumo atualizado com sucesso!' : 'Resumo salvo com sucesso! Redirecionando para questões...');
-    setSalvando(false);
   };
-
-  const irParaQuiz = () => {
-    navigate('/quiz', { 
-      state: { 
-        conteudo 
-      } 
-    });
-  };
-
-  const voltarParaConteudo = () => {
-    navigate('/materia/' + conteudo.nome.split(' - ')[0].toLowerCase() + '/conteudo', {
-      state: { conteudo }
-    });
-  };
-
-  const voltarParaMain = () => {
-    navigate('/main');
-  };
-
-  if (!conteudo && !resumoParaEditar) {
-    return (
-      <div className="criar-resumo-container">
-        <h2>Nenhum conteúdo selecionado</h2>
-        <p>Você precisa acessar essa página através de um conteúdo.</p>
-        <button onClick={voltarParaMain} className="botao-voltar">
-          <FaArrowLeft /> Voltar ao Início
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="criar-resumo-container">
-      <div className="criar-resumo-header">
-        <button onClick={voltarParaConteudo} className="botao-voltar">
-          <FaArrowLeft /> Voltar
-        </button>
-        <h1>{resumoParaEditar ? 'Editar Resumo' : 'Criar Novo Resumo'}</h1>
-      </div>
+      <h2>{vindoDoConteudo ? 'Criar Resumo do Conteúdo' : 'Criar Novo Resumo'}</h2>
 
-      {mensagemSucesso && (
-        <div className="mensagem-sucesso">
-          {mensagemSucesso}
-        </div>
-      )}
+      {message && <p className="success-message">{message}</p>}
+      {error && <p className="error-message">{error}</p>}
 
-      <div className="formulario-resumo">
+      <form onSubmit={handleSubmit}>
+        {/* Título */}
         <div className="form-group">
-          <label>Título do Resumo</label>
+          <label htmlFor="titulo">Título:</label>
           <input
             type="text"
-            placeholder="Digite o título do resumo"
+            id="titulo"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
-            className="input-titulo"
-            disabled={salvando}
+            required
           />
         </div>
 
-        <div className="form-group">
-          <label>Conteúdo do Resumo</label>
-          <textarea 
-            placeholder="Digite seu resumo aqui..." 
-            rows="15"
-            value={conteudoResumo}
-            onChange={(e) => setConteudoResumo(e.target.value)}
-            disabled={salvando}
-            className="textarea-conteudo"
-          />
-        </div>
-
-        {conteudoGerado && (
-          <div className="conteudo-original">
-            <h3>Conteúdo Original para Referência:</h3>
-            <div 
-              className="conteudo-texto"
-              dangerouslySetInnerHTML={{ __html: conteudoGerado }}
+        {/* Matéria */}
+        {!vindoDoConteudo ? (
+          <div className="form-group">
+            <label htmlFor="materia">Matéria:</label>
+            <select
+              id="materia"
+              value={materiaSelecionada.id || ''}
+              onChange={(e) => {
+                const materiaId = Number(e.target.value);
+                const materia = materiasDisponiveis.find(m => m.id === materiaId);
+                setMateriaSelecionada(materia || { id: null, nome: '' });
+              }}
+              required
+            >
+              <option value="">Selecione uma matéria</option>
+              {materiasDisponiveis.map((mat) => (
+                <option key={mat.id} value={mat.id}>
+                  {mat.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="form-group">
+            <label htmlFor="materia">Matéria:</label>
+            <input
+              type="text"
+              id="materia"
+              value={materiaSelecionada.nome || 'Carregando...'}
+              readOnly
             />
           </div>
         )}
 
-        <div className="acoes">
-          <button onClick={voltarParaConteudo} disabled={salvando} className="btn-voltar">
-            <FaArrowLeft /> Voltar
-          </button>
-          
-          <button 
-            onClick={handleSalvar} 
-            className="btn-salvar"
-            disabled={salvando}
-          >
-            <FaSave /> {salvando ? 'Salvando...' : resumoParaEditar ? 'Salvar Alterações' : 'Salvar Resumo'}
-          </button>
-          
-          {!resumoParaEditar && (
-            <button 
-              onClick={irParaQuiz} 
-              className="btn-ir-questoes"
-              disabled={salvando}
-            >
-              <FaQuestionCircle /> Ir para Questões
-            </button>
-          )}
+        {/* Corpo */}
+        <div className="form-group">
+          <label htmlFor="corpo">Corpo do Resumo:</label>
+          <textarea
+            id="corpo"
+            value={corpo}
+            onChange={(e) => setCorpo(e.target.value)}
+            rows="12"
+            required
+          ></textarea>
         </div>
-      </div>
+
+        {/* Ações */}
+        <div className="form-actions">
+          <button type="submit" className="btn-salvar">Salvar Resumo</button>
+          <button type="button" onClick={() => navigate(-1)} className="btn-cancelar">Cancelar</button>
+        </div>
+      </form>
     </div>
   );
-};
+}
 
-export default CriarResumo; 
+export default CriarResumo;

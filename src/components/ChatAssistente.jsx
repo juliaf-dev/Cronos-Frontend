@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import '../css/Chat.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { gerarRespostaIA } from '../services/geminiService';
 import { faComments, faCircleXmark, faPaperPlane, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
+import { API_BASE_URL } from '../config/config';
 
 function ChatAssistente({ materiaTopico }) {
   const [expandido, setExpandido] = useState(false);
@@ -39,40 +39,39 @@ function ChatAssistente({ materiaTopico }) {
     setMensagens((msgs) => [...msgs, novaMensagemUsuario]);
     setEntrada("");
 
-    // Extrai matéria e tópico se disponível
-    let materia = null;
-    let topico = null;
-    if (materiaTopico) {
-      [materia, topico] = materiaTopico.split(' - ');
-    }
-
     try {
-      const resposta = await gerarRespostaIA(entrada, materia, topico);
+      const res = await fetch(`${API_BASE_URL}/api/assistente`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          pergunta: entrada,
+          contexto: materiaTopico || ""
+        }),
+      });
+
+      const data = await res.json();
+
       const novaMensagemIA = { 
         origem: 'ia', 
-        conteudo: formatarRespostaIA(resposta),
+        conteudo: formatarRespostaIA(data.resposta || "Não consegui gerar uma resposta."),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMensagens((msgs) => [...msgs, novaMensagemIA]);
     } catch (error) {
-      const mensagemErro = {
+      setMensagens((msgs) => [...msgs, {
         origem: 'ia',
-        conteudo: 'Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.',
+        conteudo: '⚠️ Erro ao contatar o assistente. Tente novamente.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMensagens((msgs) => [...msgs, mensagemErro]);
+      }]);
     }
   };
 
   const formatarRespostaIA = (texto) => {
-    // Formata listas com marcadores
-    texto = texto.replace(/\n\s*•\s*/g, '\n• ');
-    // Formata títulos ou ênfase
-    texto = texto.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Preserva quebras de linha
-    return texto.split('\n').map((paragrafo, i) => 
-      paragrafo.trim() ? `<p key=${i}>${paragrafo}</p>` : ''
-    ).join('');
+    return texto
+      .split('\n')
+      .map((p, i) => p.trim() ? `<p key=${i}>${p}</p>` : '')
+      .join('');
   };
 
   return (
@@ -85,7 +84,6 @@ function ChatAssistente({ materiaTopico }) {
             </button>
             <div className="chat-title">
               <span>Assistente de Estudos</span>
-            
             </div>
           </div>
           

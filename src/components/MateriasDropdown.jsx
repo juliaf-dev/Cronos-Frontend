@@ -1,75 +1,95 @@
-import { useState, useEffect, useRef } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
-import { faGlobe, faBook, faLandmark, faUsers } from '@fortawesome/free-solid-svg-icons';
-import '../css/dropdown.css';
+// src/components/MateriasDropdown.jsx
+import { useState, useEffect, useRef } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import "../css/dropdown.css";
+import { API_BASE_URL } from "../config/config";
 
 const MateriasDropdown = ({ navegarParaMateria }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [materias, setMaterias] = useState([]);
   const dropdownRef = useRef();
   const toggleRef = useRef();
-  
-  const materias = [
-    { id: 1, nome: 'Filosofia', icone: faBook },
-    { id: 2, nome: 'Geografia', icone: faGlobe },
-    { id: 3, nome: 'História', icone: faLandmark },
-    { id: 4, nome: 'Sociologia', icone: faUsers }
-  ]
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleDropdown = () => setIsOpen((prev) => !prev);
 
   const handleMateriaClick = (materia) => {
-    navegarParaMateria({ nome: materia });
+    navegarParaMateria(materia); // já manda {id, nome, slug, ...}
     setIsOpen(false);
   };
 
-  // Fecha o dropdown quando clicar fora
+  // 🔥 Buscar matérias do backend
+  useEffect(() => {
+    const fetchMaterias = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const res = await fetch(`${API_BASE_URL}/api/materias`, {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
+        });
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setMaterias(data);
+        } else if (data.ok && Array.isArray(data.data)) {
+          setMaterias(data.data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar matérias:", error);
+      }
+    };
+
+    fetchMaterias();
+  }, []);
+
+  // Fecha ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isOpen && 
-          dropdownRef.current && 
-          !dropdownRef.current.contains(event.target) &&
-          toggleRef.current &&
-          !toggleRef.current.contains(event.target)) {
+      if (
+        isOpen &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        toggleRef.current &&
+        !toggleRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   return (
     <div className="materias-dropdown" ref={dropdownRef}>
-      <button 
-        className="dropdown-toggle" 
+      <button
+        className="dropdown-toggle"
         onClick={toggleDropdown}
         ref={toggleRef}
       >
         Matérias
-        <FontAwesomeIcon 
-          icon={isOpen ? faChevronUp : faChevronDown} 
-          className="dropdown-icon" 
+        <FontAwesomeIcon
+          icon={isOpen ? faChevronUp : faChevronDown}
+          className="dropdown-icon"
         />
       </button>
-      
+
       {isOpen && (
         <div className="dropdown-menu">
-         {materias.map(materia => (
-          <div
-            key={materia.id}
-            className="materia-item"
-            onClick={() => navegarParaMateria(materia)}
-          >
-              <FontAwesomeIcon icon={materia.icone} className="materia-icon" />
-            <span>{materia.nome}</span>
-            </div>
-          ))}
+          {materias.length > 0 ? (
+            materias.map((materia) => (
+              <div
+                key={materia.id}
+                className="materia-item"
+                onClick={() => navegarParaMateria(`/materia/${materia.id}`)}
+              >
+                <span>{materia.nome}</span>
+              </div>
+
+            ))
+          ) : (
+            <div className="materia-item">Nenhuma matéria cadastrada</div>
+          )}
         </div>
       )}
     </div>

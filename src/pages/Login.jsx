@@ -1,91 +1,106 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../css/Login.css';
-import { API_BASE_URL } from '../config/config'; // importa a URL base correta
+// src/pages/Login.jsx
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../css/Login.css";
+import { login, register } from "../services/authServices";
+import { useAuth } from "../context/AuthContext";
 
-function Login({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+function Login() {
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [error, setError] = useState("");
   const [isLogin, setIsLogin] = useState(true);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
+  const { setUser } = useAuth(); // contexto global
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const endpoint = isLogin
-        ? `${API_BASE_URL}/api/auth/login`
-        : `${API_BASE_URL}/api/auth/register`;
+      let data;
 
-      const body = isLogin
-        ? { email, password }
-        : { username, email, password };
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Algo deu errado');
+      if (isLogin) {
+        data = await login({ email, senha });
+      } else {
+        data = await register({ nome, email, senha });
       }
 
-      onLogin(data.user);
-      navigate('/main');
+      console.log("🔐 LOGIN DATA:", data);
+
+      if (!data.ok) throw new Error(data.message || "Algo deu errado");
+
+      // pega user e token dentro de data.data
+      const user = data.data?.user;
+      const accessToken = data.data?.accessToken;
+
+      if (user && accessToken) {
+        // salva no contexto e localStorage
+        setUser(user);
+        localStorage.setItem("accessToken", accessToken);
+      } else {
+        throw new Error("Usuário ou token não retornado pela API");
+      }
+
+      // redireciona para página inicial do aluno
+      navigate("/main");
     } catch (err) {
-      setError(err.message);
+      console.error("❌ Erro no login:", err);
+      setError(err.message || "Erro inesperado no login");
     }
   };
 
   return (
     <div className="login-container">
       <div className="login-box">
-        <h2>{isLogin ? 'Login' : 'Cadastro'}</h2>
+        <h2>{isLogin ? "Login" : "Cadastro"}</h2>
+
         {error && <p className="error-message">{error}</p>}
+
         <form onSubmit={handleSubmit}>
           {!isLogin && (
             <div className="form-group">
-              <label>Nome de Usuário</label>
-              <input 
-                type="text" 
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required 
+              <label>Nome</label>
+              <input
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
               />
             </div>
           )}
+
           <div className="form-group">
             <label>Email</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
+
           <div className="form-group">
             <label>Senha</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
+            <input
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
             />
           </div>
+
           <button type="submit" className="login-button">
-            {isLogin ? 'Entrar' : 'Cadastrar'}
+            {isLogin ? "Entrar" : "Cadastrar"}
           </button>
         </form>
+
         <p className="toggle-form" onClick={() => setIsLogin(!isLogin)}>
-          {isLogin ? 'Não tem uma conta? Cadastre-se' : 'Já tem uma conta? Faça login'}
+          {isLogin
+            ? "Não tem uma conta? Cadastre-se"
+            : "Já tem uma conta? Faça login"}
         </p>
       </div>
     </div>

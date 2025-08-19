@@ -1,96 +1,132 @@
-import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FaFileAlt, FaQuestionCircle } from 'react-icons/fa';
-import '../css/conteudos.css';
-import ChatAssistente from '../components/ChatAssistente';
-import { API_BASE_URL } from '../config/config'; 
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaFileAlt, FaQuestionCircle } from "react-icons/fa";
+import "../css/conteudos.css";
+import ChatAssistente from "../components/ChatAssistente";
+import { API_BASE_URL } from "../config/config";
 
-const Conteudo = ({ voltarParaMain }) => {
-  const location = useLocation();
+function Conteudo({ voltarParaMain }) {
+  const { subtopicoId } = useParams();
   const navigate = useNavigate();
-  const conteudo = location.state?.conteudo;
 
-  const [conteudoGerado, setConteudoGerado] = useState('');
+  const [conteudoBD, setConteudoBD] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
     const carregarConteudo = async () => {
-      if (!conteudo || !conteudo.nome) return;
+      if (!subtopicoId) {
+        setErro("ID do subtópico não informado.");
+        setCarregando(false);
+        return;
+      }
 
       setCarregando(true);
       setErro(null);
 
       try {
-        const [materia, topico] = conteudo.nome.split(' - ');
+        const token = localStorage.getItem("accessToken");
 
-        const response = await axios.post(
-          `${API_BASE_URL}/api/contents/generate`,
+        // 🔹 1) Busca conteúdos existentes
+        const res = await fetch(
+          `${API_BASE_URL}/api/conteudos/subtopico/${subtopicoId}`,
           {
-            materia,
-            topico
-          }, 
-          { withCredentials: true }
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            credentials: "include",
+          }
         );
 
-        setConteudoGerado(response.data.body);
-        
-        // Se o conteúdo veio do cache, mostra uma mensagem sutil
-        if (response.data.fromCache) {
-          console.log('Conteúdo carregado do cache');
+        const search = await res.json();
+
+        if (search.ok && search.data?.length) {
+          setConteudoBD(search.data[0]);
+          return;
         }
-      } catch (error) {
-        console.error('Erro ao carregar conteúdo:', error);
-        setErro('Erro ao carregar o conteúdo. Por favor, tente novamente.');
+
+        // 🔹 2) Se não existe, pede geração automática
+        const resGen = await fetch(`${API_BASE_URL}/api/conteudos/generate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          credentials: "include",
+          body: JSON.stringify({ subtopico_id: subtopicoId }),
+        });
+
+        const gen = await resGen.json();
+        if (gen.ok) {
+          setConteudoBD(gen.data);
+        } else {
+          setErro("Não foi possível gerar conteúdo.");
+        }
+      } catch (err) {
+        console.error("Erro ao carregar/gerar conteúdo:", err);
+        setErro("Não foi possível carregar ou gerar o conteúdo.");
       } finally {
         setCarregando(false);
       }
     };
 
     carregarConteudo();
-  }, [conteudo]);
+  }, [subtopicoId]);
 
-  const irParaCriarResumo = () => {
-    navigate('/criar-resumo', { 
-      state: { 
-        conteudo,
-        conteudoGerado 
-      } 
-    });
-  };
+const irParaCriarResumo = () => {
+  if (!conteudoBD) return;
+  navigate("/criar-resumo", {
+    state: {
+      conteudo: {
+        id: conteudoBD.id, // ✅ agora enviando conteudo_id
+        materiaId: conteudoBD.materia_id, // ✅ usado no CriarResumo
+        subtopicoId,
+        tituloSugerido: conteudoBD?.titulo || conteudoBD?.subtopico_nome,
+        bodyBase: conteudoBD?.body || "",
+      },
+    },
+  });
+};
+
 
   const irParaQuiz = () => {
-    navigate('/quiz', { 
-      state: { 
-        conteudo 
-      } 
+    if (!conteudoBD) return;
+    navigate("/quiz", {
+      state: {
+        conteudo: {
+          conteudo_id: conteudoBD.id,              // ✅ agora padronizado
+          materia_id: conteudoBD.materia_id,
+          topico_id: conteudoBD.topico_id,
+          subtopico_id: conteudoBD.subtopico_id,
+          titulo: conteudoBD.titulo || conteudoBD.subtopico_nome,
+        },
+      },
     });
   };
-
-  if (!conteudo) {
-    return (
-      <div className="pagina-historica">
-        <h2>Conteúdo não encontrado</h2>
-        <p>Você precisa acessar essa página através da seleção de um conteúdo.</p>
-        <button onClick={voltarParaMain} className="botao-voltar">← Voltar</button>
-      </div>
-    );
-  }
 
   return (
     <div className="pagina-historica">
-      <button onClick={voltarParaMain} className="botao-voltar">← Voltar</button>
+      <button onClick={voltarParaMain} className="botao-voltar">
+        ← Voltar
+      </button>
 
-      <h1>{conteudo.nome}</h1>
+      <h1>
+        {[conteudoBD?.materia_nome, conteudoBD?.topico_nome, conteudoBD?.subtopico_nome]
+          .filter(Boolean)
+          .join(" · ")}
+      </h1>
 
       <div className="conteudo-texto">
         {carregando ? (
           <p>Carregando conteúdo...</p>
         ) : erro ? (
           <p className="erro">{erro}</p>
+        ) : conteudoBD?.body ? (
+          <div dangerouslySetInnerHTML={{ __html: conteudoBD.body }} />
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: conteudoGerado }} />
+          <p className="erro">Conteúdo indisponível.</p>
         )}
       </div>
 
@@ -103,9 +139,13 @@ const Conteudo = ({ voltarParaMain }) => {
         </button>
       </div>
 
-      <ChatAssistente materiaTopico={conteudo.nome} />
+      {conteudoBD && (
+        <ChatAssistente
+          materiaTopico={`${conteudoBD?.materia_nome} | ${conteudoBD?.topico_nome} | ${conteudoBD?.subtopico_nome}`}
+        />
+      )}
     </div>
   );
-};
+}
 
 export default Conteudo;

@@ -17,7 +17,7 @@ const ResumoAtalhos = () => {
   return (
     <div className="resumo-atalhos">
       <h3>Resumos Recentes</h3>
-      <div className="atalhos-grid">
+      <div className="atalhos-carousel">
         {resumosRecentes.map(resumo => (
           <a 
             key={resumo.id} 

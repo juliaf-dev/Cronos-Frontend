@@ -100,7 +100,7 @@
   }
 
   .disciplinas-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr); /* ✅ AGORA fica em 2 colunas */
   }
 
   .disciplina-card {

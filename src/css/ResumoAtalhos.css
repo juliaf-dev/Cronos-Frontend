@@ -11,13 +11,20 @@
   padding-bottom: 8px;
 }
 
-.atalhos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 22px;
+.atalhos-carousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
 }
 
 .atalho-card {
+  flex: 0 0 auto;
+  width: 200px;
+  height: 50px;
+  scroll-snap-align: start;
   background: #f7f4eb;
   border-radius: 18px;
   padding: 20px 16px;
@@ -34,6 +41,12 @@
   white-space: normal;
   text-decoration: none;
 }
+.atalhos-carousel::-webkit-scrollbar {
+  display: none;
+}
+.atalhos-carousel {
+  scrollbar-width: none; /* Firefox */
+}
 
 .atalho-card:hover {
    background-color: #f5e1d3;
@@ -43,13 +56,16 @@
 .atalho-titulo {
   margin-bottom: 8px;
   background: transparent;
+  white-space: nowrap;            /* impede quebra de linha */
+  overflow: hidden;               /* esconde o texto que passar do limite */
+  text-overflow: ellipsis;
 }
 
 .atalho-data {
   font-size: 0.9rem;
   font-weight: 400;
   color: #a08c71;
-    background: transparent;
+  background: transparent;
 
 }
 
@@ -389,6 +405,12 @@
 
   .resumo-info {
     justify-content: center;
+  } 
+  .atalho-card {
+    width: auto;
+    height: auto;
+    padding: 14px 12px;
+    font-size: 1rem;
   }
 }
 
@@ -412,5 +434,10 @@
   .resumo-info {
     flex-direction: column;
     gap: 8px;
+  }
+  .atalho-card {
+    width: 140px;
+    padding: 10px 10px;
+    font-size: 0.95rem;
   }
 }

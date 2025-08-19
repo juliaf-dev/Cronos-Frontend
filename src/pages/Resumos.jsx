@@ -1,198 +1,134 @@
+// src/pages/Resumos.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEdit, FaTrash, FaPlus, FaArrowLeft } from 'react-icons/fa';
-import '../css/ResumoAtalhos.css';
+import { API_BASE_URL } from '../config/config';
+import { useAuth } from '../context/AuthContext';
+import '../css/Flashcards.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolder, faPlus, faArrowLeft, faTag } from '@fortawesome/free-solid-svg-icons';
 
-const Resumos = () => {
-  const [resumos, setResumos] = useState([]);
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [resumoParaEditar, setResumoParaEditar] = useState(null);
-  const [formData, setFormData] = useState({
-    titulo: '',
-    conteudo: '',
-    materia: '',
-    periodo: ''
-  });
+function Resumos() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Carregar resumos do localStorage
+  const [materias, setMaterias] = useState([]);
+  const [resumosData, setResumosData] = useState([]);
+  const [selectedMateria, setSelectedMateria] = useState(null);
+
+  // Buscar matérias e resumos
   useEffect(() => {
-    const resumosSalvos = JSON.parse(localStorage.getItem('resumos') || '[]');
-    setResumos(resumosSalvos);
-  }, []);
+    const fetchData = async () => {
+      try {
+        if (!user) return;
 
-  const salvarResumo = () => {
-    if (!formData.titulo.trim() || !formData.conteudo.trim()) {
-      alert('Por favor, preencha todos os campos obrigatórios');
-      return;
-    }
+        // 📌 Buscar todas as matérias
+        const materiasResponse = await fetch(`${API_BASE_URL}/api/materias`, {
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        const materiasResult = await materiasResponse.json();
+        if (materiasResponse.ok && materiasResult.ok) {
+          setMaterias(materiasResult.data);
+        }
 
-    const novoResumo = {
-      id: resumoParaEditar ? resumoParaEditar.id : Date.now(),
-      titulo: formData.titulo,
-      conteudo: formData.conteudo,
-      materia: formData.materia,
-      periodo: formData.periodo,
-      dataCriacao: resumoParaEditar ? resumoParaEditar.dataCriacao : new Date().toISOString(),
-      dataModificacao: new Date().toISOString()
+        // 📌 Buscar resumos do usuário
+        const resumosResponse = await fetch(`${API_BASE_URL}/api/resumos/usuario/${user.id}`, {
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        const resumosResult = await resumosResponse.json();
+        if (resumosResponse.ok && resumosResult.ok) {
+          setResumosData(resumosResult.data);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao buscar dados:', error);
+      }
     };
 
-    let novosResumos;
-    if (resumoParaEditar) {
-      novosResumos = resumos.map(r => r.id === resumoParaEditar.id ? novoResumo : r);
-    } else {
-      novosResumos = [...resumos, novoResumo];
-    }
+    fetchData();
+  }, [user]);
 
-    setResumos(novosResumos);
-    localStorage.setItem('resumos', JSON.stringify(novosResumos));
-    
-    setMostrarFormulario(false);
-    setResumoParaEditar(null);
-    setFormData({ titulo: '', conteudo: '', materia: '', periodo: '' });
-  };
-
-  const editarResumo = (resumo) => {
-    setResumoParaEditar(resumo);
-    setFormData({
-      titulo: resumo.titulo,
-      conteudo: resumo.conteudo,
-      materia: resumo.materia || '',
-      periodo: resumo.periodo || ''
-    });
-    setMostrarFormulario(true);
-  };
-
-  const excluirResumo = (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este resumo?')) {
-      const novosResumos = resumos.filter(resumo => resumo.id !== id);
-      setResumos(novosResumos);
-      localStorage.setItem('resumos', JSON.stringify(novosResumos));
-    }
-  };
-
-  const cancelarEdicao = () => {
-    setMostrarFormulario(false);
-    setResumoParaEditar(null);
-    setFormData({ titulo: '', conteudo: '', materia: '', periodo: '' });
-  };
-
-  const formatarData = (dataString) => {
-    return new Date(dataString).toLocaleDateString('pt-BR');
-  };
+  // Agrupar resumos por matéria, mas garantindo que todas as matérias apareçam
+  const resumosPorMateria = materias.map((materia) => {
+    const resumos = resumosData.filter((r) => r.materia_id === materia.id);
+    return {
+      materia_id: materia.id,
+      materia_nome: materia.nome,
+      resumos,
+    };
+  });
 
   return (
-    <div className="resumos-container">
-      <div className="resumos-header">
-        <button onClick={() => navigate('/main')} className="btn-voltar">
-          <FaArrowLeft /> Voltar
-        </button>
-        <h1>Meus Resumos</h1>
-        <button 
-          onClick={() => setMostrarFormulario(true)} 
-          className="btn-adicionar"
-        >
-          <FaPlus /> Novo Resumo
-        </button>
-      </div>
-
-      {mostrarFormulario && (
-        <div className="formulario-resumo">
-          <h2>{resumoParaEditar ? 'Editar Resumo' : 'Novo Resumo'}</h2>
-          
-          <div className="form-group">
-            <label>Título *</label>
-            <input
-              type="text"
-              value={formData.titulo}
-              onChange={(e) => setFormData({...formData, titulo: e.target.value})}
-              placeholder="Digite o título do resumo"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Matéria</label>
-            <select
-              value={formData.materia}
-              onChange={(e) => setFormData({...formData, materia: e.target.value})}
-            >
-              <option value="">Selecione uma matéria</option>
-              <option value="História">História</option>
-              <option value="Geografia">Geografia</option>
-              <option value="Filosofia">Filosofia</option>
-              <option value="Sociologia">Sociologia</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Período</label>
-            <input
-              type="text"
-              value={formData.periodo}
-              onChange={(e) => setFormData({...formData, periodo: e.target.value})}
-              placeholder="Ex: Pré-História, Idade Antiga..."
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Conteúdo *</label>
-            <textarea
-              value={formData.conteudo}
-              onChange={(e) => setFormData({...formData, conteudo: e.target.value})}
-              placeholder="Digite o conteúdo do resumo..."
-              rows="10"
-            />
-          </div>
-
-          <div className="form-actions">
-            <button onClick={cancelarEdicao} className="btn-cancelar">
-              Cancelar
+    <div className="flashcards-page">
+      <div className="flashcards-container">
+        <div className="flashcards-header">
+          {selectedMateria ? (
+            <button onClick={() => setSelectedMateria(null)} className="btn-voltar">
+              <FontAwesomeIcon icon={faArrowLeft} /> Voltar
             </button>
-            <button onClick={salvarResumo} className="btn-salvar">
-              {resumoParaEditar ? 'Atualizar' : 'Salvar'}
-            </button>
-          </div>
+          ) : (
+            <div style={{ width: '80px' }}></div>
+          )}
+
+          <h1 className="flashcard-title">
+            {selectedMateria ? selectedMateria.materia_nome : 'Minhas Pastas de Resumos'}
+          </h1>
+
+          <button onClick={() => navigate('/criar-resumo')} className="btn-adicionar">
+            <FontAwesomeIcon icon={faPlus} /> Novo Resumo
+          </button>
         </div>
-      )}
 
-      <div className="resumos-lista">
-        {resumos.length === 0 ? (
-          <div className="sem-resumos">
-            <p>Você ainda não tem resumos criados.</p>
-            <button onClick={() => setMostrarFormulario(true)} className="btn-adicionar">
-              <FaPlus /> Criar Primeiro Resumo
-            </button>
+        {selectedMateria ? (
+          <div className="pastas-lista">
+            {selectedMateria.resumos.length > 0 ? (
+              selectedMateria.resumos.map((resumo) => (
+                <div
+                  key={resumo.id}
+                  className="pasta-item resumo-item"
+                  onClick={() => navigate(`/resumos/${resumo.id}`)}
+                >
+                  <div className="resumo-info">
+                    <h3>{resumo.titulo}</h3>
+                    <p className="resumo-data">
+                      {new Date(resumo.criado_em).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="resumo-tag">
+                    <FontAwesomeIcon icon={faTag} /> {selectedMateria.materia_nome}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p style={{ textAlign: 'center', marginTop: '20px', color: '#5b4031' }}>
+                Não há resumos para esta matéria ainda.
+              </p>
+            )}
           </div>
         ) : (
-          resumos.map(resumo => (
-            <div key={resumo.id} className="resumo-card">
-              <div className="resumo-header">
-                <h3>{resumo.titulo}</h3>
-                <div className="resumo-acoes">
-                  <button onClick={() => editarResumo(resumo)} className="btn-editar">
-                    <FaEdit />
-                  </button>
-                  <button onClick={() => excluirResumo(resumo.id)} className="btn-excluir">
-                    <FaTrash />
-                  </button>
+          <div className="pastas-lista">
+            {resumosPorMateria.map((m) => (
+              <div
+                key={m.materia_id}
+                className="pasta-item"
+                onClick={() => setSelectedMateria(m)}
+              >
+                <FontAwesomeIcon icon={faFolder} className="pasta-icone" />
+                <div className="pasta-info">
+                  <h3>{m.materia_nome}</h3>
+                  <p>{m.resumos.length} resumos</p>
                 </div>
               </div>
-              
-              <div className="resumo-info">
-                {resumo.materia && <span className="materia">{resumo.materia}</span>}
-                {resumo.periodo && <span className="periodo">{resumo.periodo}</span>}
-                <span className="data">Criado em: {formatarData(resumo.dataCriacao)}</span>
-              </div>
-              
-              <div className="resumo-conteudo">
-                <p>{resumo.conteudo.substring(0, 200)}...</p>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>
   );
-};
+}
 
-export default Resumos; 
+export default Resumos;

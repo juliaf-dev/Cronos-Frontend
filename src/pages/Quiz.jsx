@@ -1,311 +1,258 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { FaPlus, FaArrowLeft, FaCheck, FaTimes } from 'react-icons/fa';
-import { gerarQuestoesQuiz } from '../services/geminiService';
-import '../css/Quiz.css';
+// src/pages/Quiz.jsx
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/config";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "../css/Quiz.css";
 
-const Quiz = () => {
+function Quiz() {
   const location = useLocation();
   const navigate = useNavigate();
-  const conteudo = location.state?.conteudo;
-  
-  const [questaoAtual, setQuestaoAtual] = useState(0);
-  const [pontuacao, setPontuacao] = useState(0);
-  const [mostrarResultado, setMostrarResultado] = useState(false);
-  const [respostaSelecionada, setRespostaSelecionada] = useState(null);
-  const [respostasUsuario, setRespostasUsuario] = useState([]);
-  const [questoes, setQuestoes] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState(null);
-  const [mostrarAlternativas, setMostrarAlternativas] = useState(false);
 
-  useEffect(() => {
-    const carregarQuestoes = async () => {
-      if (!conteudo) {
-        setErro('Nenhum conteúdo selecionado para gerar questões.');
-        setCarregando(false);
+  const conteudo = location.state?.conteudo;
+
+  const [quizId, setQuizId] = useState(null);
+  const [questoes, setQuestoes] = useState([]);
+  const [respostas, setRespostas] = useState({});
+  const [feedback, setFeedback] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState(null);
+  const [finalizado, setFinalizado] = useState(false);
+  const [resultado, setResultado] = useState(null);
+  const [setResumo] = useState(null);
+
+  // Criar sessão
+  const criarSessao = async () => {
+    if (!conteudo) {
+      setErro("Conteúdo não encontrado.");
+      return;
+    }
+    setLoading(true);
+    setErro(null);
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_BASE_URL}/api/quiz/sessoes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          conteudo_id: conteudo.conteudo_id,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.message || "Erro ao criar sessão");
+
+      setQuizId(data.quiz.quiz_id);
+      setQuestoes(data.quiz.questoes || []);
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Responder questão
+  const responderQuestao = async (questaoId, alternativaId, letra) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_BASE_URL}/api/quiz/responder`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          quiz_id: quizId,
+          questao_id: questaoId,
+          alternativa_id: alternativaId,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.message || "Erro ao responder");
+
+      setRespostas((prev) => ({ ...prev, [questaoId]: letra }));
+
+      setFeedback((prev) => ({
+        ...prev,
+        [questaoId]: {
+          correta: data.correta,
+          message: data.message,
+          explicacao: data.explicacao || "Sem explicação disponível.",
+          corretaLetra: data.letra_correta,
+        },
+      }));
+    } catch (err) {
+      setErro(err.message);
+    }
+  };
+
+  // Criar flashcard
+  const criarFlashcard = async (questao) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      // precisa ter respondido antes
+      const corretaLetra = feedback[questao.id]?.corretaLetra;
+      if (!corretaLetra) {
+        toast.warn("⚠️ Responda a questão antes de criar o flashcard.");
         return;
       }
 
-      setCarregando(true);
-      try {
-        const [materia, topico] = conteudo.nome.split(' - ');
-        const questoesGeradas = await gerarQuestoesQuiz(materia, topico, 5);
-        
-        const questoesFormatadas = questoesGeradas.map(q => ({
-          pergunta: q.pergunta,
-          opcoes: q.opcoes,
-          respostaCorreta: q.respostaCorreta,
-          explicacao: q.explicacao
-        }));
-        
-        setQuestoes(questoesFormatadas);
-        setRespostasUsuario(Array(questoesFormatadas.length).fill(null));
-        setErro(null);
-      } catch (error) {
-        console.error('Erro ao carregar questões:', error);
-        setErro('Erro ao carregar as questões. Por favor, tente novamente.');
-      } finally {
-        setCarregando(false);
+      const correta = questao.alternativas?.find(
+        (alt) => alt.letra?.toUpperCase() === corretaLetra?.toUpperCase()
+      );
+      if (!correta) {
+        throw new Error("Não foi possível identificar a alternativa correta.");
       }
-    };
 
-    carregarQuestoes();
-  }, [conteudo]);
+      const materiaId = questao.materia_id ?? conteudo?.materia_id;
+      if (!materiaId) {
+        throw new Error("materia_id ausente. Verifique se o backend envia questao.materia_id.");
+      }
 
-  const selecionarResposta = (opcaoIndex) => {
-    if (respostaSelecionada !== null) return;
-    
-    setRespostaSelecionada(opcaoIndex);
-    
-    const novasRespostas = [...respostasUsuario];
-    novasRespostas[questaoAtual] = opcaoIndex;
-    setRespostasUsuario(novasRespostas);
+      const flashPayload = {
+        materia_id: materiaId,
+        pergunta: String(questao.enunciado),
+        resposta: String(correta.texto),
+      };
 
-    if (opcaoIndex === questoes[questaoAtual].respostaCorreta) {
-      setPontuacao(pontuacao + 1);
+      const res = await fetch(`${API_BASE_URL}/api/flashcards`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify(flashPayload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.message || "Erro ao criar flashcard");
+
+      toast.success(data.message || "✅ Flashcard criado com sucesso!");
+    } catch (err) {
+      console.error("❌ Erro ao criar flashcard:", err);
+      toast.error(err.message);
     }
   };
 
-  const irParaProximaQuestao = () => {
-    if (respostaSelecionada === null) {
-      alert('Por favor, selecione uma resposta antes de continuar.');
-      return;
+  // Finalizar quiz
+  const finalizarQuiz = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      const res = await fetch(`${API_BASE_URL}/api/quiz/finalizar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({ quiz_id: quizId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.message || "Erro ao finalizar");
+
+      setResultado(data);
+
+      const resumoRes = await fetch(`${API_BASE_URL}/api/quiz/${quizId}/resumo`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+
+      const resumoData = await resumoRes.json();
+      if (!resumoRes.ok || resumoData.error)
+        throw new Error(resumoData.message || "Erro ao carregar resumo");
+
+      setResumo(resumoData);
+      setFinalizado(true);
+    } catch (err) {
+      setErro(err.message);
     }
-
-    if (questaoAtual === questoes.length - 1) {
-      setMostrarResultado(true);
-    } else {
-      setQuestaoAtual(questaoAtual + 1);
-      setRespostaSelecionada(null);
-      setMostrarAlternativas(false);
-    }
   };
 
-  const voltarQuestao = () => {
-    if (questaoAtual > 0) {
-      setQuestaoAtual(questaoAtual - 1);
-      setRespostaSelecionada(respostasUsuario[questaoAtual - 1]);
-      setMostrarAlternativas(false);
-    }
-  };
+  useEffect(() => {
+    criarSessao();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const reiniciarQuiz = () => {
-    setQuestaoAtual(0);
-    setPontuacao(0);
-    setMostrarResultado(false);
-    setRespostaSelecionada(null);
-    setRespostasUsuario(Array(questoes.length).fill(null));
-    setMostrarAlternativas(false);
-  };
-
-  const salvarParaFlashcard = () => {
-    const questaoAtualObj = questoes[questaoAtual];
-    
-    // Extrai a matéria e período do nome do conteúdo
-    const partesConteudo = conteudo.nome.split(' - ');
-    const materia = partesConteudo[0] || 'História'; // Fallback para História se não conseguir extrair
-    const periodo = partesConteudo[1] || '';
-    
-    // Log para debug - mostra como o conteúdo está sendo processado
-    console.log('Conteúdo original:', conteudo.nome);
-    console.log('Partes extraídas:', partesConteudo);
-    console.log('Matéria extraída:', materia);
-    console.log('Período extraído:', periodo);
-    
-    const novoFlashcard = {
-      id: Date.now(),
-      pergunta: questaoAtualObj.pergunta,
-      resposta: questaoAtualObj.opcoes[questaoAtualObj.respostaCorreta],
-      materia: materia,
-      periodo: periodo,
-      dataCriacao: new Date().toISOString()
-    };
-
-    // Salva no localStorage
-    const flashcardsExistentes = JSON.parse(localStorage.getItem('flashcards') || '[]');
-    flashcardsExistentes.push(novoFlashcard);
-    localStorage.setItem('flashcards', JSON.stringify(flashcardsExistentes));
-
-    // Mostra mensagem de confirmação com a matéria
-    alert(`Questão salva como flashcard na pasta "${materia}"!`);
-    
-    // Log para debug
-    console.log('Flashcard salvo:', {
-      materia: materia,
-      periodo: periodo,
-      pergunta: questaoAtualObj.pergunta.substring(0, 50) + '...',
-      flashcardCompleto: novoFlashcard
-    });
-  };
-
-  const voltarParaConteudo = () => {
-    navigate('/materia/' + conteudo.nome.split(' - ')[0].toLowerCase() + '/conteudo', {
-      state: { conteudo }
-    });
-  };
-
-  const voltarParaMain = () => {
-    navigate('/main');
-  };
-
-  if (carregando) {
-    return (
-      <div className="quiz-container">
-        <div className="quiz-loading">
-          <h2>Gerando questões...</h2>
-          <p>Aguarde enquanto preparamos seu quiz personalizado.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (erro) {
-    return (
-      <div className="quiz-container">
-        <div className="quiz-error">
-          <h2>Erro</h2>
-          <p>{erro}</p>
-          <button onClick={voltarParaConteudo} className="btn-voltar">
-            <FaArrowLeft /> Voltar ao Conteúdo
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (mostrarResultado) {
-    const porcentagem = Math.round((pontuacao / questoes.length) * 100);
-    const mensagem = porcentagem >= 80 ? 'Excelente!' : 
-                    porcentagem >= 60 ? 'Bom trabalho!' : 
-                    porcentagem >= 40 ? 'Continue estudando!' : 'Precisa revisar mais!';
-
-    return (
-      <div className="quiz-container">
-        <div className="quiz-resultado">
-          <h1>Resultado do Quiz</h1>
-          <div className="resultado-info">
-            <h2>{mensagem}</h2>
-            <p>Você acertou {pontuacao} de {questoes.length} questões</p>
-            <div className="porcentagem">{porcentagem}%</div>
-          </div>
-          
-          <div className="resultado-acoes">
-            <button onClick={reiniciarQuiz} className="btn-reiniciar">
-              Tentar Novamente
-            </button>
-            <button onClick={voltarParaConteudo} className="btn-voltar">
-              <FaArrowLeft /> Voltar ao Conteúdo
-            </button>
-            <button onClick={voltarParaMain} className="btn-main">
-              Voltar ao Início
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const questao = questoes[questaoAtual];
+  if (loading) return <p>Carregando quiz...</p>;
+  if (erro) return <p className="error-message">{erro}</p>;
 
   return (
     <div className="quiz-container">
-      <div className="quiz-header">
-        <button onClick={voltarParaConteudo} className="btn-voltar">
-          <FaArrowLeft /> Voltar
-        </button>
-        <h1>Quiz: {conteudo?.nome}</h1>
-      </div>
+      <h2>Quiz do Conteúdo: {conteudo?.titulo}</h2>
 
-      <div className="questao">
-        <div className="progresso">
-          Questão {questaoAtual + 1} de {questoes.length}
-        </div>
-        
-        <h2>{questao.pergunta}</h2>
-        
-        {!mostrarAlternativas ? (
-          <div className="container-botao-alternativas">
-            <button 
-              className="btn-mostrar-alternativas"
-              onClick={() => setMostrarAlternativas(true)}
-            >
-              Ver Alternativas
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="opcoes">
-              {questao.opcoes.map((opcao, index) => {
-                const isSelecionada = respostaSelecionada === index;
-                const isCorreta = index === questao.respostaCorreta;
-                
-                let classeAlternativa = 'opcao';
-                if (respostaSelecionada !== null) {
-                  if (isSelecionada) {
-                    classeAlternativa = isCorreta ? 'opcao correta' : 'opcao incorreta';
-                  } else {
-                    classeAlternativa = 'opcao disabled';
-                  }
-                }
+      {!finalizado && questoes.length > 0 && (
+        <>
+          {questoes.map((q, idx) => (
+            <div key={q.id} className="questao-card">
+              <h3>{idx + 1}. {q.enunciado}</h3>
 
-                return (
-                  <button
-                    key={index}
-                    onClick={() => selecionarResposta(index)}
-                    className={classeAlternativa}
-                    disabled={respostaSelecionada !== null}
-                  >
-                    {opcao}
-                    {respostaSelecionada !== null && (
-                      <span className="icone-resposta">
-                        {isSelecionada ? (
-                          isCorreta ? <FaCheck /> : <FaTimes />
-                        ) : isCorreta ? <FaCheck /> : null}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            
-            {respostaSelecionada !== null && (
-              <div className="explicacao-resposta">
-                <h3>Explicação:</h3>
-                <p>{questao.explicacao}</p>
+              <div className="alternativas">
+                {q.alternativas?.map((alt) => {
+                  const userAnswer = respostas[q.id];
+                  const fb = feedback[q.id];
+                  const isCorreta = fb?.corretaLetra === alt.letra;
+
+                  return (
+                    <button
+                      key={alt.id}
+                      className={`alternativa-btn 
+                        ${userAnswer === alt.letra ? "selecionada" : ""}
+                        ${fb ? (isCorreta ? "correta" : userAnswer === alt.letra ? "errada" : "") : ""}`}
+                      onClick={() => responderQuestao(q.id, alt.id, alt.letra)}
+                      disabled={!!fb}
+                    >
+                      {alt.letra}) {alt.texto}
+                    </button>
+                  );
+                })}
               </div>
-            )}
-            
-            <div className="navegacao-questoes">
-              <button 
-                onClick={voltarQuestao} 
-                className="btn-navegacao"
-                disabled={questaoAtual === 0}
-              >
-                ← Anterior
-              </button>
-              
-              {respostaSelecionada !== null && (
-                <button 
-                  className="btn-salvar-flashcard"
-                  onClick={salvarParaFlashcard}
-                >
-                  <FaPlus /> Adicionar aos Flashcards
-                </button>
+
+              {feedback[q.id] && (
+                <div className="feedback">
+                  <p>{feedback[q.id].message}</p>
+                  <p><strong>Explicação:</strong> {feedback[q.id].explicacao}</p>
+                </div>
               )}
-              
-              <button 
-                onClick={irParaProximaQuestao} 
-                className="btn-navegacao"
-              >
-                {questaoAtual === questoes.length - 1 ? 'Ver Resultado' : 'Próxima →'}
+
+              <button className="btn-flashcard" onClick={() => criarFlashcard(q)}>
+                ➕ Criar Flashcard
               </button>
             </div>
-          </>
-        )}
-      </div>
+          ))}
+
+          <button className="btn-finalizar" onClick={finalizarQuiz}>
+            Finalizar Quiz
+          </button>
+        </>
+      )}
+
+      {finalizado && resultado && (
+        <div className="quiz-resumo">
+          <h3>✅ Resultado do Quiz</h3>
+          <p>Total: {resultado.total}</p>
+          <p>Acertos: {resultado.acertos}</p>
+          <p>Erros: {resultado.erros}</p>
+
+          <button onClick={() => navigate("/main")}>⬅ Voltar ao painel</button>
+        </div>
+      )}
+
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
     </div>
   );
-};
+}
 
-export default Quiz; 
+export default Quiz;
