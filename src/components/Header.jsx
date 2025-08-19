@@ -1,13 +1,14 @@
+// src/components/Header.jsx
 import React, { useState, useRef, useEffect } from "react";
 import "../css/Header.css";
 import logo from "../assets/logo/logocronos.png";
 import MateriasDropdown from "./MateriasDropdown";
-import Search from "./Searchbox";
-import NotifIcon from "./NotfIcon";
+// import Search from "./Searchbox";   // 🔴 removido
+// import NotifIcon from "./NotfIcon"; // 🔴 removido
 import { FaBars, FaTimes, FaLayerGroup, FaFileAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import UserDropdown from "./UserDropdown";
-import { useAuth } from "../context/AuthContext"; // <-- contexto de auth
+import { useAuth } from "../context/AuthContext";
 
 const Header = ({ navegarParaMateria, voltarParaMain }) => {
   const [menuAberto, setMenuAberto] = useState(false);
@@ -15,7 +16,7 @@ const Header = ({ navegarParaMateria, voltarParaMain }) => {
   const hamburguerRef = useRef();
   const navigate = useNavigate();
 
-  const { user, handleLogout } = useAuth(); // <-- pega user e logout do contexto
+  const { user, handleLogout } = useAuth();
 
   const toggleMenu = () => setMenuAberto(!menuAberto);
 
@@ -80,13 +81,14 @@ const Header = ({ navegarParaMateria, voltarParaMain }) => {
         >
           {menuAberto ? <FaTimes /> : <FaBars />}
         </button>
-        <Search />
-        <NotifIcon />
 
-        {/* Dropdown do usuário com logout */}
+        {/* 🔴 Ícones ocultados */}
+        {/* <Search /> */}
+        {/* <NotifIcon /> */}
+
         <UserDropdown
-          user={user}          // passa user se quiser mostrar nome/foto
-          onLogout={handleLogout} // agora pega direto do contexto
+          user={user}
+          onLogout={handleLogout}
         />
       </div>
 

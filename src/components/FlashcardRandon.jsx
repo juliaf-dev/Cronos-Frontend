@@ -1,59 +1,102 @@
-import React, { useState, useEffect } from 'react';
-import '../css/FlashcardRandon.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faBrain, faGlobe, faLandmark, faUsers } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect } from "react";
+import "../css/FlashcardRandon.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBook,
+  faBrain,
+  faGlobe,
+  faLandmark,
+  faUsers,
+} from "@fortawesome/free-solid-svg-icons";
+import { API_BASE_URL } from "../config/config";
+import { useAuth } from "../context/AuthContext";
+
+const icones = {
+  Filosofia: faBook,
+  Geografia: faGlobe,
+  História: faLandmark,
+  Sociologia: faUsers,
+  Geral: faBrain,
+};
 
 const FlashcardRandon = () => {
-  const bancoFake = [
-    {
-      materia: "Filosofia",
-      icone: faBook,
-      pergunta: "O que é o mito da caverna de Platão?",
-      resposta: "Uma alegoria sobre a ignorância e a busca pelo conhecimento verdadeiro."
-    },
-    {
-      materia: "Geografia",
-      icone: faGlobe,
-      pergunta: "O que é clima equatorial?",
-      resposta: "Clima quente e úmido, com chuvas bem distribuídas ao longo do ano."
-    },
-    {
-      materia: "História",
-      icone: faLandmark,
-      pergunta: "Quem foi D. Pedro I?",
-      resposta: "Foi o primeiro imperador do Brasil e proclamou a independência em 1822."
-    },
-    {
-      materia: "Sociologia",
-      
-      icone: faUsers,
-      pergunta: "O que é fato social segundo Durkheim?",
-      resposta: "É toda maneira de agir, pensar e sentir que exerce coerção sobre o indivíduo."
-    }
-  ];
-
+  const { user } = useAuth();
   const [flashcard, setFlashcard] = useState(null);
   const [mostrarResposta, setMostrarResposta] = useState(false);
 
   useEffect(() => {
-    const aleatorio = Math.floor(Math.random() * bancoFake.length);
-    setFlashcard(bancoFake[aleatorio]);
-  }, []);
+    if (!user) return;
 
-  const toggleResposta = () => {
-    setMostrarResposta(prev => !prev);
-  };
+    const fetchAleatorio = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (!token) return;
 
-  if (!flashcard) return null;
+        const res = await fetch(`${API_BASE_URL}/api/flashcards`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+
+        const data = await res.json();
+        const lista = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+          ? data.data
+          : [];
+
+        if (lista.length === 0) {
+          setFlashcard(null);
+          return;
+        }
+
+        const aleatorio = Math.floor(Math.random() * lista.length);
+        setFlashcard(lista[aleatorio]);
+        setMostrarResposta(false);
+      } catch (err) {
+        console.error("❌ Erro ao buscar flashcard aleatório:", err);
+      }
+    };
+
+    fetchAleatorio();
+  }, []); // 👈 roda em todo refresh
+
+  const toggleResposta = () => setMostrarResposta((prev) => !prev);
+
+  if (!flashcard) {
+    return (
+      <div className="flashcard-functional">
+        <div className="flashcard-top">
+          <span className="flashcard-materia">
+            <FontAwesomeIcon icon={faBrain} /> 
+            <span className="materia-nome">Flashcards</span>
+          </span>
+          <a href="/flashcards" className="flashcard-ver-todos">
+            Ver todos
+          </a>
+        </div>
+        <div className="flashcard-content">
+          <div className="flashcard-question">
+            Nenhum flashcard encontrado para você.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flashcard-functional">
       <div className="flashcard-top">
         <span className="flashcard-materia">
-          <FontAwesomeIcon icon={flashcard.icone} className="materia-icon" />
-          <span className="materia-emoji">{flashcard.emoji}</span> {flashcard.materia}
+          <FontAwesomeIcon
+            icon={icones[flashcard.materia] || faBrain}
+            className="materia-icon"
+          />
+          <span className="materia-nome">{flashcard.materia}</span>
         </span>
-        <a href="#" className="flashcard-ver-todos">Ver todos</a>
+        <a href="/flashcards" className="flashcard-ver-todos">
+          Ver todos
+        </a>
       </div>
 
       <div className="flashcard-content">
@@ -63,11 +106,8 @@ const FlashcardRandon = () => {
         )}
       </div>
 
-      <button 
-        className="flashcard-toggle-btn" 
-        onClick={toggleResposta}
-      >
-        {mostrarResposta ? 'Esconder resposta' : 'Mostrar resposta'}
+      <button className="flashcard-toggle-btn" onClick={toggleResposta}>
+        {mostrarResposta ? "Esconder resposta" : "Mostrar resposta"}
       </button>
     </div>
   );

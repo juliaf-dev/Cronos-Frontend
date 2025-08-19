@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { API_BASE_URL } from '../config/config';
 import '../css/CriarResumo.css';
 
+
 function CriarResumo() {
   const navigate = useNavigate();
   const location = useLocation();

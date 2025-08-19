@@ -40,6 +40,7 @@ function Login() {
         // salva no contexto e localStorage
         setUser(user);
         localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("userId", user.id); // <-- ADICIONE ISSO
       } else {
         throw new Error("Usuário ou token não retornado pela API");
       }

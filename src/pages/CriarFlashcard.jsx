@@ -1,8 +1,9 @@
 // src/pages/CriarFlashcard.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { API_BASE_URL } from '../config/config';
-import '../css/CriarResumo.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { API_BASE_URL } from "../config/config";
+
+import "../css/CriarFlashcards.css";
 
 function CriarFlashcard() {
   const navigate = useNavigate();
@@ -11,19 +12,23 @@ function CriarFlashcard() {
   const vindoDoConteudo = !!conteudoState;
 
   const [materiasDisponiveis, setMateriasDisponiveis] = useState([]);
-  const [materiaSelecionada, setMateriaSelecionada] = useState({ id: null, nome: '' });
-  const [pergunta, setPergunta] = useState('');
-  const [resposta, setResposta] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [materiaSelecionada, setMateriaSelecionada] = useState({
+    id: null,
+    nome: "",
+  });
+  const [pergunta, setPergunta] = useState("");
+  const [resposta, setResposta] = useState("");
+  const [dificuldade, setDificuldade] = useState("medio"); // 🔹 default
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const token = localStorage.getItem('accessToken');
+  const token = localStorage.getItem("accessToken");
 
-  // 🔹 Se veio de conteúdo → carrega matéria vinculada
+  // 🔹 Carregar matéria vinculada se veio de conteúdo
   useEffect(() => {
     if (vindoDoConteudo && conteudoState) {
-      setPergunta(conteudoState.tituloSugerido || '');
-      setResposta('');
+      setPergunta(conteudoState.tituloSugerido || "");
+      setResposta("");
 
       const carregarMateria = async () => {
         try {
@@ -41,16 +46,15 @@ function CriarFlashcard() {
 
           const response = await fetch(url, { headers });
           const data = await response.json();
-
-          if (!response.ok) throw new Error(data.message || 'Erro ao carregar matéria vinculada');
+          if (!response.ok) throw new Error(data.message || "Erro ao carregar matéria vinculada");
 
           setMateriaSelecionada({
             id: data.data?.id || data.data?.materia_id,
-            nome: data.data?.nome || data.data?.nome_materia || 'Matéria'
+            nome: data.data?.nome || data.data?.nome_materia || "Matéria",
           });
         } catch (err) {
-          console.error('❌ Erro ao carregar matéria vinculada:', err);
-          setError('Erro ao carregar a matéria vinculada.');
+          console.error("❌ Erro ao carregar matéria vinculada:", err);
+          setError("Erro ao carregar a matéria vinculada.");
         }
       };
 
@@ -58,7 +62,7 @@ function CriarFlashcard() {
     }
   }, [vindoDoConteudo, conteudoState, token]);
 
-  // 🔹 Se for criação manual → carrega todas matérias
+  // 🔹 Carregar matérias se criação manual
   useEffect(() => {
     if (vindoDoConteudo) return;
 
@@ -68,14 +72,12 @@ function CriarFlashcard() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Erro ao carregar matérias");
 
-        if (!response.ok) throw new Error(data.message || 'Erro ao carregar matérias');
-
-        // garante que é array
         setMateriasDisponiveis(Array.isArray(data.data) ? data.data : []);
       } catch (err) {
-        console.error('❌ Erro ao buscar matérias:', err);
-        setError('Erro ao carregar matérias.');
+        console.error("❌ Erro ao buscar matérias:", err);
+        setError("Erro ao carregar matérias.");
       }
     };
 
@@ -85,11 +87,11 @@ function CriarFlashcard() {
   // 🔹 Salvar Flashcard
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     if (!pergunta || !resposta || !materiaSelecionada.id) {
-      setError('Preencha todos os campos obrigatórios.');
+      setError("Preencha todos os campos obrigatórios.");
       return;
     }
 
@@ -99,38 +101,38 @@ function CriarFlashcard() {
         ...(conteudoState?.id ? { conteudo_id: conteudoState.id } : {}),
         pergunta,
         resposta,
+        dificuldade, // 🔹 agora com dificuldade
       };
 
       const response = await fetch(`${API_BASE_URL}/api/flashcards`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(flashcardPayload),
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Erro ao criar flashcard");
 
-      if (!response.ok) throw new Error(data.message || 'Erro ao criar flashcard');
-
-      setMessage(data.message || 'Flashcard criado com sucesso!');
+      setMessage(data.message || "Flashcard criado com sucesso!");
       setTimeout(() => {
         if (vindoDoConteudo) {
-          navigate('/quiz', { state: { conteudo: conteudoState } });
+          navigate("/quiz", { state: { conteudo: conteudoState } });
         } else {
-          navigate('/flashcards');
+          navigate("/flashcards");
         }
       }, 1000);
     } catch (err) {
-      console.error('❌ Erro ao salvar flashcard:', err);
-      setError(err.message || 'Erro ao criar flashcard.');
+      console.error("❌ Erro ao salvar flashcard:", err);
+      setError(err.message || "Erro ao criar flashcard.");
     }
   };
 
   return (
     <div className="criar-flashcard-container">
-      <h2>{vindoDoConteudo ? 'Criar Flashcard do Conteúdo' : 'Criar Novo Flashcard'}</h2>
+      <h2>{vindoDoConteudo ? "Criar Flashcard do Conteúdo" : "Criar Novo Flashcard"}</h2>
 
       {message && <p className="success-message">{message}</p>}
       {error && <p className="error-message">{error}</p>}
@@ -152,11 +154,11 @@ function CriarFlashcard() {
             <label htmlFor="materia">Matéria:</label>
             <select
               id="materia"
-              value={materiaSelecionada.id || ''}
+              value={materiaSelecionada.id || ""}
               onChange={(e) => {
                 const materiaId = Number(e.target.value);
-                const materia = materiasDisponiveis.find(m => m.id === materiaId);
-                setMateriaSelecionada(materia || { id: null, nome: '' });
+                const materia = materiasDisponiveis.find((m) => m.id === materiaId);
+                setMateriaSelecionada(materia || { id: null, nome: "" });
               }}
               required
             >
@@ -174,7 +176,7 @@ function CriarFlashcard() {
             <input
               type="text"
               id="materia"
-              value={materiaSelecionada.nome || 'Carregando...'}
+              value={materiaSelecionada.nome || "Carregando..."}
               readOnly
             />
           </div>
@@ -189,6 +191,20 @@ function CriarFlashcard() {
             rows="8"
             required
           ></textarea>
+        </div>
+
+        {/* 🔹 campo de dificuldade */}
+        <div className="form-group">
+          <label htmlFor="dificuldade">Nível de dificuldade:</label>
+          <select
+            id="dificuldade"
+            value={dificuldade}
+            onChange={(e) => setDificuldade(e.target.value)}
+          >
+            <option value="facil">Fácil</option>
+            <option value="medio">Médio</option>
+            <option value="dificil">Difícil</option>
+          </select>
         </div>
 
         <div className="form-actions">

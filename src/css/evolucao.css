@@ -1,0 +1,116 @@
+/* src/css/evolucao.css */
+
+/* Container principal */
+.evolucao-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #5b4031;
+}
+
+.evolucao-container h2 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #7a533a;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* Cards resumo */
+.resumo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.resumo-cards .card {
+  background: #fefaf3;
+  border: 2px solid #b26a40;
+  border-radius: 18px;
+  padding: 22px;
+  text-align: center;
+  box-shadow: 0 6px 14px rgba(178, 106, 64, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.resumo-cards .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(178, 106, 64, 0.35);
+}
+
+.resumo-cards .card h3 {
+  font-size: 1.2rem;
+  color: #a14400;
+  margin-bottom: 10px;
+}
+
+.resumo-cards .card p {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 6px 0;
+}
+
+.resumo-cards .card small {
+  color: #7a533a;
+  font-size: 0.9rem;
+}
+
+/* Seção de gráficos */
+.graficos-section {
+  margin-top: 40px;
+}
+
+.graficos-section h2 {
+  font-size: 1.7rem;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #7a533a;
+}
+
+.graficos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.grafico-card {
+  background: #fefaf3;
+  border: 2px solid #b26a40;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 6px 16px rgba(178, 106, 64, 0.25);
+  transition: transform 0.25s ease;
+}
+
+.grafico-card:hover {
+  transform: translateY(-3px);
+}
+
+.grafico-card h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #5b4031;
+  text-align: center;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .resumo-cards {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .resumo-cards .card h3 {
+    font-size: 1rem;
+  }
+
+  .resumo-cards .card p {
+    font-size: 1.3rem;
+  }
+
+  .graficos-grid {
+    grid-template-columns: 1fr;
+  }
+}

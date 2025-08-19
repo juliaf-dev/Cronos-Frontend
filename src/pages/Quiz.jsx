@@ -6,10 +6,16 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../css/Quiz.css";
 
+// 📊 Import da barra circular
+import {
+  CircularProgressbar,
+  buildStyles,
+} from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+
 function Quiz() {
   const location = useLocation();
   const navigate = useNavigate();
-
   const conteudo = location.state?.conteudo;
 
   const [quizId, setQuizId] = useState(null);
@@ -20,7 +26,9 @@ function Quiz() {
   const [erro, setErro] = useState(null);
   const [finalizado, setFinalizado] = useState(false);
   const [resultado, setResultado] = useState(null);
-  const [setResumo] = useState(null);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [mostrarAlternativas, setMostrarAlternativas] = useState(false);
 
   // Criar sessão
   const criarSessao = async () => {
@@ -40,13 +48,12 @@ function Quiz() {
           Authorization: `Bearer ${token}`,
         },
         credentials: "include",
-        body: JSON.stringify({
-          conteudo_id: conteudo.conteudo_id,
-        }),
+        body: JSON.stringify({ conteudo_id: conteudo.conteudo_id }),
       });
 
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.message || "Erro ao criar sessão");
+      if (!res.ok || data.error)
+        throw new Error(data.message || "Erro ao criar sessão");
 
       setQuizId(data.quiz.quiz_id);
       setQuestoes(data.quiz.questoes || []);
@@ -76,10 +83,10 @@ function Quiz() {
       });
 
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.message || "Erro ao responder");
+      if (!res.ok || data.error)
+        throw new Error(data.message || "Erro ao responder");
 
       setRespostas((prev) => ({ ...prev, [questaoId]: letra }));
-
       setFeedback((prev) => ({
         ...prev,
         [questaoId]: {
@@ -98,8 +105,6 @@ function Quiz() {
   const criarFlashcard = async (questao) => {
     try {
       const token = localStorage.getItem("accessToken");
-
-      // precisa ter respondido antes
       const corretaLetra = feedback[questao.id]?.corretaLetra;
       if (!corretaLetra) {
         toast.warn("⚠️ Responda a questão antes de criar o flashcard.");
@@ -109,14 +114,10 @@ function Quiz() {
       const correta = questao.alternativas?.find(
         (alt) => alt.letra?.toUpperCase() === corretaLetra?.toUpperCase()
       );
-      if (!correta) {
-        throw new Error("Não foi possível identificar a alternativa correta.");
-      }
+      if (!correta) throw new Error("Não foi possível identificar a alternativa correta.");
 
       const materiaId = questao.materia_id ?? conteudo?.materia_id;
-      if (!materiaId) {
-        throw new Error("materia_id ausente. Verifique se o backend envia questao.materia_id.");
-      }
+      if (!materiaId) throw new Error("materia_id ausente no backend.");
 
       const flashPayload = {
         materia_id: materiaId,
@@ -137,9 +138,8 @@ function Quiz() {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.message || "Erro ao criar flashcard");
 
-      toast.success(data.message || "✅ Flashcard criado com sucesso!");
+      toast.success(data.message || "✅ Flashcard criado!");
     } catch (err) {
-      console.error("❌ Erro ao criar flashcard:", err);
       toast.error(err.message);
     }
   };
@@ -148,7 +148,6 @@ function Quiz() {
   const finalizarQuiz = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-
       const res = await fetch(`${API_BASE_URL}/api/quiz/finalizar`, {
         method: "POST",
         headers: {
@@ -160,21 +159,10 @@ function Quiz() {
       });
 
       const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.message || "Erro ao finalizar");
+      if (!res.ok || data.error)
+        throw new Error(data.message || "Erro ao finalizar");
 
       setResultado(data);
-
-      const resumoRes = await fetch(`${API_BASE_URL}/api/quiz/${quizId}/resumo`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      });
-
-      const resumoData = await resumoRes.json();
-      if (!resumoRes.ok || resumoData.error)
-        throw new Error(resumoData.message || "Erro ao carregar resumo");
-
-      setResumo(resumoData);
       setFinalizado(true);
     } catch (err) {
       setErro(err.message);
@@ -189,29 +177,59 @@ function Quiz() {
   if (loading) return <p>Carregando quiz...</p>;
   if (erro) return <p className="error-message">{erro}</p>;
 
+  const questaoAtual = questoes[currentIndex];
+  const progresso = ((currentIndex + 1) / questoes.length) * 100;
+
   return (
     <div className="quiz-container">
       <h2>Quiz do Conteúdo: {conteudo?.titulo}</h2>
 
       {!finalizado && questoes.length > 0 && (
         <>
-          {questoes.map((q, idx) => (
-            <div key={q.id} className="questao-card">
-              <h3>{idx + 1}. {q.enunciado}</h3>
+          {/* Barra de progresso linear */}
+          <div className="progress-bar">
+            <div className="progress" style={{ width: `${progresso}%` }}></div>
+          </div>
+          <p>
+            Questão {currentIndex + 1} de {questoes.length}
+          </p>
 
+          {/* Questão atual */}
+          <div className="questao-card">
+            <h3>{questaoAtual.enunciado}</h3>
+
+            {!mostrarAlternativas ? (
+              <button
+                className="btn-expandir"
+                onClick={() => setMostrarAlternativas(true)}
+              >
+                ▼ Mostrar alternativas
+              </button>
+            ) : (
               <div className="alternativas">
-                {q.alternativas?.map((alt) => {
-                  const userAnswer = respostas[q.id];
-                  const fb = feedback[q.id];
+                {questaoAtual.alternativas?.map((alt) => {
+                  const userAnswer = respostas[questaoAtual.id];
+                  const fb = feedback[questaoAtual.id];
                   const isCorreta = fb?.corretaLetra === alt.letra;
+                  const isSelecionada = userAnswer === alt.letra;
 
                   return (
                     <button
                       key={alt.id}
                       className={`alternativa-btn 
-                        ${userAnswer === alt.letra ? "selecionada" : ""}
-                        ${fb ? (isCorreta ? "correta" : userAnswer === alt.letra ? "errada" : "") : ""}`}
-                      onClick={() => responderQuestao(q.id, alt.id, alt.letra)}
+                        ${isSelecionada ? "selecionada" : ""}
+                        ${
+                          fb
+                            ? isCorreta
+                              ? "correta"
+                              : isSelecionada
+                              ? "errada"
+                              : ""
+                            : ""
+                        }`}
+                      onClick={() =>
+                        responderQuestao(questaoAtual.id, alt.id, alt.letra)
+                      }
                       disabled={!!fb}
                     >
                       {alt.letra}) {alt.texto}
@@ -219,30 +237,68 @@ function Quiz() {
                   );
                 })}
               </div>
+            )}
 
-              {feedback[q.id] && (
-                <div className="feedback">
-                  <p>{feedback[q.id].message}</p>
-                  <p><strong>Explicação:</strong> {feedback[q.id].explicacao}</p>
-                </div>
-              )}
+            {feedback[questaoAtual.id] && (
+              <div className="feedback">
+                <p>{feedback[questaoAtual.id].message}</p>
+                <p>
+                  <strong>Explicação:</strong>{" "}
+                  {feedback[questaoAtual.id].explicacao}
+                </p>
+              </div>
+            )}
 
-              <button className="btn-flashcard" onClick={() => criarFlashcard(q)}>
-                ➕ Criar Flashcard
+            <button
+              className="btn-flashcard"
+              onClick={() => criarFlashcard(questaoAtual)}
+            >
+              ➕ Criar Flashcard
+            </button>
+
+            {feedback[questaoAtual.id] && currentIndex < questoes.length - 1 && (
+              <button
+                className="btn-proxima"
+                onClick={() => {
+                  setCurrentIndex((i) => i + 1);
+                  setMostrarAlternativas(false);
+                }}
+              >
+                ➡ Próxima questão
               </button>
-            </div>
-          ))}
+            )}
 
-          <button className="btn-finalizar" onClick={finalizarQuiz}>
-            Finalizar Quiz
-          </button>
+            {feedback[questaoAtual.id] && currentIndex === questoes.length - 1 && (
+              <button className="btn-finalizar" onClick={finalizarQuiz}>
+                🏁 Finalizar Quiz
+              </button>
+            )}
+          </div>
         </>
       )}
 
+      {/* Resultado final com barra circular */}
       {finalizado && resultado && (
         <div className="quiz-resumo">
           <h3>✅ Resultado do Quiz</h3>
-          <p>Total: {resultado.total}</p>
+
+          <div style={{ width: 180, margin: "20px auto" }}>
+            <CircularProgressbar
+              value={(resultado.acertos / resultado.total) * 100}
+              text={`${Math.round(
+                (resultado.acertos / resultado.total) * 100
+              )}%`}
+              styles={buildStyles({
+                textColor: "#333",
+                pathColor: "#28a745",
+                trailColor: "#ddd",
+                textSize: "16px",
+                pathTransitionDuration: 0.5,
+              })}
+            />
+          </div>
+
+          <p>Total de Questões: {resultado.total}</p>
           <p>Acertos: {resultado.acertos}</p>
           <p>Erros: {resultado.erros}</p>
 

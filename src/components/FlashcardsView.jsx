@@ -10,10 +10,12 @@ import {
   faUsers,
   faCheckCircle,
   faClock,
+  faEye,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { API_BASE_URL } from "../config/config";
 import { useAuth } from "../context/AuthContext";
-import "../css/FlashcardRandon.css";
+import "../css/FlashcardViews.css";
 
 const icones = {
   Filosofia: faBook,
@@ -23,18 +25,36 @@ const icones = {
   Geral: faBrain,
 };
 
+// ⏳ calcula tempo até revisão
+const tempoAteRevisao = (revisar_em) => {
+  if (!revisar_em) return { texto: "Sem data", pendente: false };
+
+  const agora = new Date();
+  const revisarData = new Date(revisar_em);
+  const diffMs = revisarData - agora;
+
+  if (diffMs <= 0) {
+    return { texto: "Agora!", pendente: true };
+  }
+
+  const horas = Math.floor(diffMs / (1000 * 60 * 60));
+  const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  return {
+    texto: dias > 0 ? `${dias} dia(s)` : `${horas} hora(s)`,
+    pendente: false,
+  };
+};
+
 const FlashcardView = () => {
-  const { user } = useAuth(); 
+  const { user } = useAuth();
   const { materiaId, id } = useParams();
   const [flashcards, setFlashcards] = useState([]);
   const [indexAtual, setIndexAtual] = useState(0);
   const [mostrarResposta, setMostrarResposta] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      console.warn("⚠️ Usuário não autenticado.");
-      return;
-    }
+    if (!user) return;
 
     const fetchFlashcards = async () => {
       try {
@@ -47,29 +67,16 @@ const FlashcardView = () => {
           url = `${API_BASE_URL}/api/flashcards`;
         }
 
-        console.log("🌐 Buscando flashcards em:", url);
-
         const token = localStorage.getItem("accessToken");
-        if (!token) {
-          console.warn("⚠️ Nenhum token encontrado no localStorage.");
-          return;
-        }
+        if (!token) return;
 
         const res = await fetch(url, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) {
-          throw new Error(`Erro HTTP: ${res.status}`);
-        }
-
+        if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
         const data = await res.json();
-        console.log("📥 Resposta bruta da API:", data);
 
-        // 🔑 Trata os dois formatos possíveis: array puro ou objeto com .data
         const lista = Array.isArray(data)
           ? data
           : Array.isArray(data?.data)
@@ -78,7 +85,7 @@ const FlashcardView = () => {
           ? [data]
           : [];
 
-        console.log("✅ Lista final de flashcards:", lista);
+        lista.sort((a, b) => new Date(a.revisar_em) - new Date(b.revisar_em));
 
         setFlashcards(lista);
         setIndexAtual(0);
@@ -98,26 +105,23 @@ const FlashcardView = () => {
 
     if (vaiMostrar && atual && !atual.revisado) {
       try {
-        console.log("📌 Registrando revisão de flashcard:", atual.id);
         const token = localStorage.getItem("accessToken");
-
         await fetch(`${API_BASE_URL}/api/flashcards/${atual.id}/resultado`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ revisado: true }),
+          body: JSON.stringify({ resultado: "revisado" }),
         });
 
-        // Atualiza localmente para já refletir na UI
         setFlashcards((prev) =>
           prev.map((f, i) =>
             i === indexAtual ? { ...f, revisado: true } : f
           )
         );
       } catch (err) {
-        console.error("❌ Erro ao registrar revisão:", err);
+        console.error("❌ Erro ao registrar resultado:", err);
       }
     }
   };
@@ -130,63 +134,77 @@ const FlashcardView = () => {
 
   if (flashcards.length === 0) {
     return (
-      <div className="flashcard-functional">
-        <div className="flashcard-top">
-          <span className="flashcard-materia">Flashcards</span>
-          <Link to="/flashcards" className="flashcard-ver-todos">
-            Voltar às pastas
-          </Link>
-        </div>
-        <div className="flashcard-content">
-          <div className="flashcard-question">Nenhum flashcard encontrado.</div>
+      <div className="flashcard-view-container">
+        <div className="flashcard-view">
+          <div className="flashcard-view-top">
+            <span className="flashcard-view-materia">Flashcards</span>
+            <Link to="/flashcards" className="flashcard-view-voltar">
+              Voltar às pastas
+            </Link>
+          </div>
+          <div className="flashcard-view-content">
+            <div className="flashcard-view-question">
+              Nenhum flashcard encontrado.
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   const flashcard = flashcards[indexAtual];
+  const { texto, pendente } = tempoAteRevisao(flashcard.revisar_em);
 
   return (
-    <div className="flashcard-functional">
-      <div className="flashcard-top">
-        <span className="flashcard-materia">
-          <FontAwesomeIcon
-            icon={icones[flashcard.materia] || faBrain}
-            className="materia-icon"
-          />
-          {flashcard.materia || "Flashcards"}
-        </span>
-        <Link to="/flashcards" className="flashcard-ver-todos">
-          Ver pastas
-        </Link>
-      </div>
-
-      <div className="flashcard-content">
-        <div className="flashcard-question">{flashcard.pergunta}</div>
-        {mostrarResposta && (
-          <div className="flashcard-answer">{flashcard.resposta}</div>
-        )}
-      </div>
-
-      <div className="flashcard-status">
-        {flashcard.revisado ? (
-          <span className="status revisado">
-            <FontAwesomeIcon icon={faCheckCircle} color="green" /> Revisado
+    <div className="flashcard-view-container">
+      <div className="flashcard-view">
+        <div className="flashcard-view-top">
+          <span className="flashcard-view-materia">
+            <FontAwesomeIcon
+              icon={icones[flashcard.materia] || faBrain}
+              className="materia-icon"
+            />
+            <span className="materia-text">{flashcard.materia || "Flashcards"}</span>
           </span>
-        ) : (
-          <span className="status revisar">
-            <FontAwesomeIcon icon={faClock} color="orange" /> A revisar
-          </span>
-        )}
-      </div>
+          <Link to="/flashcards" className="flashcard-view-voltar">
+            Ver pastas
+          </Link>
+        </div>
 
-      <div className="flashcard-actions">
-        <button className="flashcard-toggle-btn" onClick={toggleResposta}>
-          {mostrarResposta ? "Esconder resposta" : "Exibir resposta"}
-        </button>
-        <button className="flashcard-next-btn" onClick={proximo}>
-          Próximo →
-        </button>
+        <div className="flashcard-view-content">
+          <div className="flashcard-view-question">{flashcard.pergunta}</div>
+          {mostrarResposta && (
+            <div className="flashcard-view-answer">{flashcard.resposta}</div>
+          )}
+        </div>
+
+        <div className="flashcard-view-status">
+          {pendente ? (
+            <span className="status revisar">
+              <FontAwesomeIcon icon={faClock} color="orange" /> Revisar agora!
+            </span>
+          ) : (
+            <span
+              className="status revisado"
+              title={`Próxima revisão em ${texto}`}
+            >
+              <FontAwesomeIcon icon={faCheckCircle} color="green" /> Revisado
+            </span>
+          )}
+        </div>
+
+        <div className="flashcard-view-actions">
+          <button className="flashcard-view-btn" onClick={toggleResposta}>
+            <FontAwesomeIcon icon={faEye} />
+            <span className="btn-text">
+              {mostrarResposta ? " Esconder" : " resposta"}
+            </span>
+          </button>
+          <button className="flashcard-view-btn" onClick={proximo}>
+            <FontAwesomeIcon icon={faArrowRight} />
+            <span className="btn-text"> Próximo</span>
+          </button>
+        </div>
       </div>
     </div>
   );

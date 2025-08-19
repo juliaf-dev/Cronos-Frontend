@@ -1,0 +1,49 @@
+/* src/css/userDropdown.css */
+
+/* Wrapper do título que enviamos para o Dropdown */
+.ud-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Bolinha do avatar */
+.ud-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #7a533a;
+  color: #f2f1e7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: background-color 0.25s ease, transform 0.15s ease;
+}
+
+/* Nome do usuário fica oculto por padrão */
+.ud-name {
+  display: none;
+  font-weight: 700;
+  color: #7a533a;
+  white-space: nowrap;
+}
+
+/* Ao passar o mouse sobre o grupo, mostra o nome e dá feedback no avatar */
+.ud-top:hover .ud-avatar {
+  background: #b06c49;
+  transform: translateY(-1px);
+}
+.ud-top:hover .ud-name {
+  display: inline;
+}
+
+/* Em dispositivos touch (sem hover), mantemos o nome oculto */
+@media (hover: none) {
+  .ud-name {
+    display: none !important;
+  }
+}
+/* src/css/userDropdown.css */
+
+

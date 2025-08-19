@@ -1,10 +1,27 @@
-// src/pages/Flashcards.jsx (arquivo completo já ajustado)
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config/config';
-import '../css/Flashcards.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faPlus, faArrowLeft, faTag } from '@fortawesome/free-solid-svg-icons';
+// src/pages/Flashcards.jsx
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/config";
+import "../css/Flashcards.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFolder,
+  faPlus,
+  faBook,
+  faBrain,
+  faGlobe,
+  faLandmark,
+  faUsers,
+} from "@fortawesome/free-solid-svg-icons";
+
+// 🔹 Ícones por matéria
+const icones = {
+  Filosofia: faBook,
+  Geografia: faGlobe,
+  História: faLandmark,
+  Sociologia: faUsers,
+  Geral: faBrain,
+};
 
 function Flashcards() {
   const navigate = useNavigate();
@@ -17,32 +34,32 @@ function Flashcards() {
       try {
         // matérias
         const materiasResponse = await fetch(`${API_BASE_URL}/api/materias`, {
-          credentials: 'include',
-          headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+          credentials: "include",
+          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         const materiasResult = await materiasResponse.json();
         if (materiasResponse.ok && materiasResult.ok) {
           setMaterias(materiasResult.data);
         }
 
-        // flashcards do usuário (opcional; só para contar por pasta)
+        // flashcards
         const flashcardsResponse = await fetch(`${API_BASE_URL}/api/flashcards`, {
-          credentials: 'include',
-          headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+          credentials: "include",
+          headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
         });
         const flashcardsResult = await flashcardsResponse.json();
         if (flashcardsResponse.ok && flashcardsResult.ok) {
           setFlashcardsData(flashcardsResult.data);
         }
       } catch (error) {
-        console.error('❌ Erro ao buscar dados:', error);
+        console.error("❌ Erro ao buscar dados:", error);
       }
     };
 
     fetchData();
   }, []);
 
-  // conta por matéria
+  // contar flashcards por matéria
   const flashcardsPorMateria = materias.map((materia) => {
     const flashcards = flashcardsData.filter(
       (f) => f.materia_id === materia.id || f.materiaId === materia.id
@@ -58,9 +75,12 @@ function Flashcards() {
     <div className="flashcards-page">
       <div className="flashcards-container">
         <div className="flashcards-header">
-          <div style={{ width: '80px' }}></div>
+          <div style={{ width: "80px" }}></div>
           <h1 className="flashcard-title">Minhas Pastas de Flashcards</h1>
-          <button onClick={() => navigate('/criar-flashcard')} className="btn-adicionar">
+          <button
+            onClick={() => navigate("/criar-flashcard")}
+            className="btn-adicionar"
+          >
             <FontAwesomeIcon icon={faPlus} /> Novo Flashcard
           </button>
         </div>
@@ -72,7 +92,9 @@ function Flashcards() {
               className="pasta-item"
               onClick={() => navigate(`/flashcards/materia/${m.materia_id}`)}
             >
-              <FontAwesomeIcon icon={faFolder} className="pasta-icone" />
+              <div className="pasta-icone">
+                <FontAwesomeIcon icon={icones[m.materia_nome] || faFolder} />
+              </div>
               <div className="pasta-info">
                 <h3>{m.materia_nome}</h3>
                 <p>{m.qtde} flashcards</p>
@@ -80,7 +102,6 @@ function Flashcards() {
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

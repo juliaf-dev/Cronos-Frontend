@@ -1,11 +1,11 @@
-.criar-resumo-container {
+.criar-flashcard-container {
   max-width: 900px;
   margin: 0 auto;
   padding: 24px;
   font-family: 'Rajdhani', sans-serif;
 }
 
-.criar-resumo-container h2 {
+.criar-flashcard-container h2 {
   font-size: 1.8rem;
   font-weight: 700;
   color: #7a533a;
@@ -35,7 +35,7 @@
   border: 2px solid #ef9a9a;
 }
 
-.form-resumo {
+.form-flashcard {
   background: #fefaf3;
   border-radius: 18px;
   padding: 30px;
@@ -75,11 +75,14 @@
   outline: none;
 }
 
+/* 🔥 pergunta e resposta do flashcard menores */
 .form-group textarea {
   resize: vertical;
-  min-height: 150px;
+  min-height: 80px;  /* ✅ igual a pergunta */
+  max-height: 120px;
 }
 
+/* Ações */
 .form-actions {
   display: flex;
   justify-content: flex-end;

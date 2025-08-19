@@ -45,33 +45,40 @@ function ChatAssistente({ materiaTopico }) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          pergunta: entrada,
+          mensagem: entrada,   // ✅ correto
           contexto: materiaTopico || ""
         }),
       });
 
       const data = await res.json();
 
+      // ✅ Ajuste para suportar resposta em data.resposta OU data.data.resposta
+      const resposta = data.resposta || data.data?.resposta || "Não consegui gerar uma resposta.";
+
       const novaMensagemIA = { 
         origem: 'ia', 
-        conteudo: formatarRespostaIA(data.resposta || "Não consegui gerar uma resposta."),
+        conteudo: formatarRespostaIA(resposta),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMensagens((msgs) => [...msgs, novaMensagemIA]);
     } catch (error) {
       setMensagens((msgs) => [...msgs, {
         origem: 'ia',
-        conteudo: '⚠️ Erro ao contatar o assistente. Tente novamente.',
+        conteudo: '<p>⚠️ Erro ao contatar o assistente. Tente novamente.</p>',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
     }
   };
 
   const formatarRespostaIA = (texto) => {
-    return texto
-      .split('\n')
-      .map((p, i) => p.trim() ? `<p key=${i}>${p}</p>` : '')
-      .join('');
+    if (!texto || typeof texto !== "string") {
+      return "<p>Não consegui gerar uma resposta.</p>";
+    }
+    const partes = texto.split("\n").filter(p => p.trim());
+    if (partes.length === 0) {
+      return `<p>${texto}</p>`;
+    }
+    return partes.map((p, i) => `<p key=${i}>${p}</p>`).join("");
   };
 
   return (

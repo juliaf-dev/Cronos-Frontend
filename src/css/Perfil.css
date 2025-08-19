@@ -1,0 +1,51 @@
+.perfil-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.perfil-container h2, h3 {
+  text-align: center;
+}
+
+.perfil-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.perfil-form input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.perfil-form button {
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.perfil-form button:hover {
+  background: #0056b3;
+}
+
+.perfil-foto {
+  display: block;
+  margin: 10px auto;
+  max-width: 100px;
+  border-radius: 50%;
+  border: 2px solid #007bff;
+}
+
+.perfil-message {
+  text-align: center;
+  padding: 10px;
+}

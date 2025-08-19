@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import "./css/Main.css";
 
@@ -13,9 +12,10 @@ import Quiz from "./pages/Quiz";
 import CriarResumo from "./pages/CriarResumo";
 import CriarFlashcard from "./pages/CriarFlashcard";
 import ResumoView from "./components/ResumoView";
-import FlashcardView from "./components/FlashcardsView";// <-- ✅ singular e caminho correto
+import FlashcardView from "./components/FlashcardsView"; 
 import TopicosPage from "./pages/TopicosPage";
 import Resumos from "./pages/Resumos";
+import Evolucao from "./pages/Evolucao";
 
 // 📦 Componentes
 import Header from "./components/Header";
@@ -50,7 +50,7 @@ function AuthenticatedApp() {
 
         {/* 📌 Flashcards */}
         <Route path="/flashcards" element={<Flashcards />} />
-        <Route path="/flashcards/materia/:materiaId" element={<FlashcardView />} /> {/* ✅ */}
+        <Route path="/flashcards/materia/:materiaId" element={<FlashcardView />} /> 
         <Route path="/flashcards/:id" element={<FlashcardView />} />
 
         {/* 📌 Resumos */}
@@ -62,6 +62,7 @@ function AuthenticatedApp() {
         <Route path="/criar-flashcard" element={<CriarFlashcard />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/suporte" element={<Suporte />} />
+        <Route path="/evolucao" element={<Evolucao />} />
 
         {/* fallback → manda para main */}
         <Route path="*" element={<Navigate to="/main" replace />} />

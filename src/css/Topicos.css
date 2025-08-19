@@ -1,28 +1,35 @@
+/* src/css/Topicos.css */
+
 .topicos-container {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: 'Rajdhani', sans-serif;
+  color: #5b4031;
 }
 
 .topicos-container h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #7a533a;
   text-align: center;
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: 24px;
 }
 
-/* Card de cada tópico */
+/* Card de tópico */
 .topico-card {
-  background: #fff;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  background: #fefaf3;
+  border: 2px solid #b26a40;
+  border-radius: 18px;
+  box-shadow: 0 6px 16px rgba(178, 106, 64, 0.2);
+  margin-bottom: 18px;
+  transition: all 0.3s ease;
   overflow: hidden;
-  transition: all 0.2s ease-in-out;
 }
 
 .topico-card:hover {
   transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(178, 106, 64, 0.3);
 }
 
 /* Cabeçalho do tópico */
@@ -30,48 +37,103 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: 14px 20px;
   cursor: pointer;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ddd;
+  background: #fff6ec;
 }
 
 .topico-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
   margin: 0;
-  font-size: 18px;
-  color: #222;
+  color: #a14400;
 }
 
 .expand-btn {
-  font-size: 20px;
-  font-weight: bold;
+  background: linear-gradient(135deg, #b26a40, #7a4f2a);
   border: none;
-  background: transparent;
+  color: #fff8ee;
+  font-size: 1.2rem;
+  font-weight: 700;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   cursor: pointer;
-  color: #555;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .expand-btn:hover {
-  transform: scale(1.2);
-  color: #000;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(178, 106, 64, 0.35);
 }
 
 /* Lista de subtopicos */
 .subtopicos-list {
-  padding: 10px 20px;
-  background: #fafafa;
+  padding: 14px 20px;
+  background: #fffdf9;
+  border-top: 1px solid #e5c9a8;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .subtopico-item {
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 6px;
+  padding: 12px 16px;
+  background: #fdf7f2;
+  border-radius: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
-  color: #333;
+  transition: all 0.25s ease;
+  border: 1px solid #e2bfa0;
 }
 
 .subtopico-item:hover {
-  background: #e0f0ff;
+  background: #b26a40;
+  color: #fffdf9;
+  border-color: #b26a40;
+}
+
+.no-subtopicos {
+  font-size: 0.95rem;
+  color: #7a533a;
+  font-style: italic;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .topicos-container {
+    padding: 16px;
+  }
+
+  .topico-header h3 {
+    font-size: 1.05rem;
+  }
+
+  .expand-btn {
+    font-size: 1rem;
+    width: 32px;
+    height: 32px;
+  }
+
+  .subtopico-item {
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topico-header h3 {
+    font-size: 1rem;
+  }
+
+  .expand-btn {
+    font-size: 0.9rem;
+    width: 28px;
+    height: 28px;
+  }
+
+  .subtopico-item {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
 }

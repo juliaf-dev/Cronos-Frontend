@@ -1,9 +1,29 @@
 // src/components/MateriasDropdown.jsx
 import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBook,
+  faBrain,
+  faGlobe,
+  faLandmark,
+  faUsers,
+  faCheckCircle,
+  faClock,
+  faChevronDown,
+  faChevronUp,
+} from "@fortawesome/free-solid-svg-icons";
 import "../css/dropdown.css";
 import { API_BASE_URL } from "../config/config";
+
+const icones = {
+  Filosofia: faBook,
+  Geografia: faGlobe,
+  História: faLandmark,
+  Sociologia: faUsers,
+  Psicologia: faBrain,
+  Revisão: faCheckCircle,
+  Tempo: faClock,
+};
 
 const MateriasDropdown = ({ navegarParaMateria }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,11 +34,16 @@ const MateriasDropdown = ({ navegarParaMateria }) => {
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
   const handleMateriaClick = (materia) => {
-    navegarParaMateria(materia); // já manda {id, nome, slug, ...}
+    if (!materia.id && !materia.materia_id) {
+      console.error("❌ Matéria sem id válido:", materia);
+      return;
+    }
+
+    // ✅ passa o objeto inteiro (igual ao Main.jsx)
+    navegarParaMateria(materia);
     setIsOpen(false);
   };
 
-  // 🔥 Buscar matérias do backend
   useEffect(() => {
     const fetchMaterias = async () => {
       try {
@@ -42,7 +67,7 @@ const MateriasDropdown = ({ navegarParaMateria }) => {
     fetchMaterias();
   }, []);
 
-  // Fecha ao clicar fora
+  // Fecha dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -79,13 +104,16 @@ const MateriasDropdown = ({ navegarParaMateria }) => {
           {materias.length > 0 ? (
             materias.map((materia) => (
               <div
-                key={materia.id}
+                key={materia.id || materia.materia_id}
                 className="materia-item"
-                onClick={() => navegarParaMateria(`/materia/${materia.id}`)}
+                onClick={() => handleMateriaClick(materia)}
               >
-                <span>{materia.nome}</span>
+                <FontAwesomeIcon
+                  icon={icones[materia.nome] || faBook}
+                  className="materia-icon"
+                />
+                <span className="materia-nome">{materia.nome}</span>
               </div>
-
             ))
           ) : (
             <div className="materia-item">Nenhuma matéria cadastrada</div>
