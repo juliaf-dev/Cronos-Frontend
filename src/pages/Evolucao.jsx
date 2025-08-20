@@ -5,24 +5,22 @@ import {
   BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
 import '../css/evolucao.css';
+import { useAuth } from "../context/AuthContext";
 
 const Evolucao = () => {
   const [dados, setDados] = useState(null);
+  const { user } = useAuth();
 
   // 🔹 Buscar evolução inicial no backend
   useEffect(() => {
     const fetchEvolucao = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
-        const userId = localStorage.getItem("userId");
-
-        if (!userId) {
-          console.error("❌ Nenhum userId encontrado no localStorage!");
+        if (!user?.id) {
+          console.error("❌ Nenhum usuário logado no contexto!");
           return;
         }
 
-        const res = await fetch(`${API_BASE_URL}/api/evolucao/painel/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(`${API_BASE_URL}/api/evolucao/painel/${user.id}`, {
           credentials: "include",
         });
 
@@ -38,18 +36,15 @@ const Evolucao = () => {
     };
 
     fetchEvolucao();
-  }, []);
+  }, [user]);
 
   // 🔹 Ping automático de minutos estudados (atualiza state em tempo real)
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-
     const ping = async () => {
       try {
         if (document.visibilityState === "visible") {
           const res = await fetch(`${API_BASE_URL}/api/evolucao/ping`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
             credentials: "include",
           });
 

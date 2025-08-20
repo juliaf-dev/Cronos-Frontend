@@ -1,25 +1,18 @@
-const API_URL =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+import { API_BASE_URL } from "../config/config";
 
-console.log("🌍 API_URL em uso:", API_URL);
+console.log("🌍 API_URL em uso:", API_BASE_URL);
 
-// Função auxiliar para requisições
-async function request(path, options = {}, includeAuth = false) {
-  const headers = { "Content-Type": "application/json" };
-
-  if (includeAuth) {
-    const token = localStorage.getItem("accessToken");
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-  }
-
+// Função auxiliar para requisições com cookies
+async function request(path, options = {}) {
   try {
-    const res = await fetch(`${API_URL}/api/auth${path}`, {
+    const res = await fetch(`${API_BASE_URL}/api/auth${path}`, {
       ...options,
-      headers,
-      credentials: "include", // mantém cookies (refresh token httpOnly)
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // 🔑 envia/recebe cookies HttpOnly
     });
 
-    // tenta parsear JSON apenas se resposta for válida
     const text = await res.text();
     let data;
     try {
@@ -45,36 +38,23 @@ export async function register({ nome, email, senha }) {
 
 // Login
 export async function login({ email, senha }) {
-  const resp = await request("/login", {
+  return request("/login", {
     method: "POST",
     body: JSON.stringify({ email, senha }),
   });
-
-  if (resp.ok && resp.data?.accessToken) {
-    localStorage.setItem("accessToken", resp.data.accessToken);
-  }
-
-  return resp;
 }
 
-// Refresh do accessToken
+// Refresh (gera novo accessToken, backend já lida via cookie)
 export async function refresh() {
-  const resp = await request("/refresh", { method: "POST" });
-
-  if (resp.ok && resp.data?.accessToken) {
-    localStorage.setItem("accessToken", resp.data.accessToken);
-  }
-
-  return resp;
+  return request("/refresh", { method: "POST" });
 }
 
-// Logout
+// Logout (apaga cookie no backend)
 export async function logout() {
-  localStorage.removeItem("accessToken");
   return request("/logout", { method: "POST" });
 }
 
 // Pegar dados do usuário logado
 export async function me() {
-  return request("/me", {}, true);
+  return request("/me");
 }

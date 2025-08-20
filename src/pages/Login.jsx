@@ -32,17 +32,15 @@ function Login() {
 
       if (!data.ok) throw new Error(data.message || "Algo deu errado");
 
-      // pega user e token dentro de data.data
+      // pega user dentro de data.data
       const user = data.data?.user;
-      const accessToken = data.data?.accessToken;
 
-      if (user && accessToken) {
-        // salva no contexto e localStorage
+      if (user) {
+        // salva no contexto e no localStorage apenas o userId
         setUser(user);
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("userId", user.id); // <-- ADICIONE ISSO
+        localStorage.setItem("userId", user.id);
       } else {
-        throw new Error("Usuário ou token não retornado pela API");
+        throw new Error("Usuário não retornado pela API");
       }
 
       // redireciona para página inicial do aluno
