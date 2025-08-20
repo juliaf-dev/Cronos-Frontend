@@ -1,6 +1,8 @@
 const API_URL =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
+console.log("🌍 API_URL em uso:", API_URL);
+
 // Função auxiliar para requisições
 async function request(path, options = {}, includeAuth = false) {
   const headers = { "Content-Type": "application/json" };
@@ -10,13 +12,27 @@ async function request(path, options = {}, includeAuth = false) {
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}/api/auth${path}`, {
-    ...options,
-    headers,
-    credentials: "include", // mantém cookies (refresh token httpOnly)
-  });
+  try {
+    const res = await fetch(`${API_URL}/api/auth${path}`, {
+      ...options,
+      headers,
+      credentials: "include", // mantém cookies (refresh token httpOnly)
+    });
 
-  return await res.json();
+    // tenta parsear JSON apenas se resposta for válida
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { ok: false, message: text || "Resposta inválida do servidor" };
+    }
+
+    return { status: res.status, ...data };
+  } catch (err) {
+    console.error("❌ Erro de rede em request:", err);
+    return { ok: false, message: err.message || "Erro de conexão" };
+  }
 }
 
 // Registrar usuário

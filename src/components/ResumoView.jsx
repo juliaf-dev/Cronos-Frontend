@@ -1,204 +1,197 @@
-// src/components/FlashcardView.jsx
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBook,
-  faBrain,
-  faGlobe,
-  faLandmark,
-  faUsers,
-  faCheckCircle,
-  faClock,
-} from "@fortawesome/free-solid-svg-icons";
+import { useNavigate, useParams } from "react-router-dom";
 import { API_BASE_URL } from "../config/config";
 import { useAuth } from "../context/AuthContext";
-import "../css/FlashcardRandon.css";
+import "../css/CriarResumo.css"; // Reutiliza CSS de formulário
 
-// 🔹 Ícones por matéria
-const icones = {
-  Filosofia: faBook,
-  Geografia: faGlobe,
-  História: faLandmark,
-  Sociologia: faUsers,
-  Geral: faBrain,
-};
-
-// ⏳ calcula tempo até revisão
-const tempoAteRevisao = (revisar_em) => {
-  if (!revisar_em) return { texto: "Sem data", pendente: false };
-
-  const agora = new Date();
-  const revisarData = new Date(revisar_em);
-  const diffMs = revisarData - agora;
-
-  if (diffMs <= 0) {
-    return { texto: "Agora!", pendente: true }; // já passou ou chegou
-  }
-
-  const horas = Math.floor(diffMs / (1000 * 60 * 60));
-  const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  return {
-    texto: dias > 0 ? `${dias} dia(s)` : `${horas} hora(s)`,
-    pendente: false,
-  };
-};
-
-const FlashcardView = () => {
+function ResumoView() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const { materiaId, id } = useParams();
-  const [flashcards, setFlashcards] = useState([]);
-  const [indexAtual, setIndexAtual] = useState(0);
-  const [mostrarResposta, setMostrarResposta] = useState(false);
 
+  const [titulo, setTitulo] = useState("");
+  const [conteudo, setConteudo] = useState("");
+  const [materia, setMateria] = useState("");
+  const [materiasDisponiveis, setMateriasDisponiveis] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  // 🔹 Carregar resumo e matérias
   useEffect(() => {
-    if (!user) {
-      console.warn("⚠️ Usuário não autenticado.");
-      return;
-    }
+    if (!user) return;
 
-    const fetchFlashcards = async () => {
+    const fetchResumo = async () => {
       try {
-        let url;
-        if (materiaId) {
-          url = `${API_BASE_URL}/api/flashcards/materia/${materiaId}`;
-        } else if (id) {
-          url = `${API_BASE_URL}/api/flashcards/${id}`;
-        } else {
-          url = `${API_BASE_URL}/api/flashcards`;
-        }
-
-        const token = localStorage.getItem("accessToken");
-        if (!token) return;
-
-        const res = await fetch(url, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await fetch(`${API_BASE_URL}/api/resumos/${id}`, {
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
         });
+        const data = await response.json();
 
-        if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
-
-        const data = await res.json();
-        const lista = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.data)
-          ? data.data
-          : data
-          ? [data]
-          : [];
-
-        lista.sort((a, b) => new Date(a.revisar_em) - new Date(b.revisar_em));
-
-        setFlashcards(lista);
-        setIndexAtual(0);
-        setMostrarResposta(false);
+        if (response.ok && data.ok) {
+          setTitulo(data.data.titulo);
+          setConteudo(data.data.corpo); // campo correto na tabela
+          setMateria(data.data.materia_id);
+        } else {
+          setError(data.error || "Resumo não encontrado.");
+        }
       } catch (err) {
-        console.error("❌ Erro ao carregar flashcards:", err);
+        setError("❌ Erro ao carregar o resumo.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchFlashcards();
-  }, [user, materiaId, id]);
-
-  const toggleResposta = async () => {
-    const atual = flashcards[indexAtual];
-    const vaiMostrar = !mostrarResposta;
-    setMostrarResposta(vaiMostrar);
-
-    if (vaiMostrar && atual && !atual.revisado) {
+    const fetchMaterias = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
-
-        await fetch(`${API_BASE_URL}/api/flashcards/${atual.id}/resultado`, {
-          method: "POST",
+        const res = await fetch(`${API_BASE_URL}/api/materias`, {
+          credentials: "include",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
-          body: JSON.stringify({ resultado: "revisado" }),
         });
-
-        setFlashcards((prev) =>
-          prev.map((f, i) =>
-            i === indexAtual ? { ...f, revisado: true } : f
-          )
-        );
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          setMateriasDisponiveis(data.data);
+        }
       } catch (err) {
-        console.error("❌ Erro ao registrar resultado:", err);
+        console.error("❌ Erro ao carregar matérias:", err);
       }
+    };
+
+    fetchMaterias();
+    fetchResumo();
+  }, [id, user]);
+
+  // 🔹 Atualizar resumo
+  const handleSalvar = async () => {
+    setMessage("");
+    setError("");
+
+    if (!titulo || !conteudo || !materia) {
+      setError("⚠️ Por favor, preencha todos os campos.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/resumos/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        body: JSON.stringify({ titulo, corpo: conteudo, materia_id: materia }),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.ok) {
+        setMessage("✅ Resumo atualizado com sucesso!");
+      } else {
+        setError(data.error || "Erro ao atualizar resumo.");
+      }
+    } catch (err) {
+      setError("❌ Erro ao atualizar resumo.");
     }
   };
 
-  const proximo = () => {
-    if (flashcards.length === 0) return;
-    setIndexAtual((prev) => (prev + 1) % flashcards.length);
-    setMostrarResposta(false);
+  // 🔹 Excluir resumo
+  const handleExcluir = async () => {
+    if (!window.confirm("Tem certeza que deseja excluir este resumo?")) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/resumos/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+
+      if (response.ok) {
+        navigate("/resumos");
+      } else {
+        const data = await response.json();
+        setError(data.error || "Erro ao excluir resumo.");
+      }
+    } catch {
+      setError("❌ Erro ao excluir resumo.");
+    }
   };
 
-  if (flashcards.length === 0) {
-    return (
-      <div className="flashcard-functional">
-        <div className="flashcard-top">
-          <span className="flashcard-materia">Flashcards</span>
-          <Link to="/flashcards" className="flashcard-ver-todos">
-            Voltar às pastas
-          </Link>
-        </div>
-        <div className="flashcard-content">
-          <div className="flashcard-question">Nenhum flashcard encontrado.</div>
-        </div>
-      </div>
-    );
-  }
-
-  const flashcard = flashcards[indexAtual];
-  const { texto, pendente } = tempoAteRevisao(flashcard.revisar_em);
+  if (loading) return <p>Carregando resumo...</p>;
 
   return (
-    <div className="flashcard-functional">
-      <div className="flashcard-top">
-        <span className="flashcard-materia">
-          <FontAwesomeIcon
-            icon={icones[flashcard.materia] || faBrain}
-            className="materia-icon"
-          />
-          {flashcard.materia || "Flashcards"}
-        </span>
-        <Link to="/flashcards" className="flashcard-ver-todos">
-          Ver pastas
-        </Link>
+    <div className="criar-resumo-container">
+      <h2>Visualizar / Editar Resumo</h2>
+      {message && <p className="success-message">{message}</p>}
+      {error && <p className="error-message">{error}</p>}
+
+      <div className="form-group">
+        <label htmlFor="titulo">Título:</label>
+        <input
+          type="text"
+          id="titulo"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          required
+        />
       </div>
 
-      <div className="flashcard-content">
-        <div className="flashcard-question">{flashcard.pergunta}</div>
-        {mostrarResposta && (
-          <div className="flashcard-answer">{flashcard.resposta}</div>
-        )}
+      <div className="form-group">
+        <label htmlFor="conteudo">Conteúdo do Resumo:</label>
+        <textarea
+          id="conteudo"
+          value={conteudo}
+          onChange={(e) => setConteudo(e.target.value)}
+          rows="8"
+          required
+        />
       </div>
 
-      <div className="flashcard-status">
-        {pendente ? (
-          <span className="status revisar">
-            <FontAwesomeIcon icon={faClock} color="orange" /> Revisar agora!
-          </span>
-        ) : (
-          <span className="status revisado" title={`Próxima revisão em ${texto}`}>
-            <FontAwesomeIcon icon={faCheckCircle} color="green" /> Revisado
-          </span>
-        )}
+      <div className="form-group">
+        <label htmlFor="materia">Matéria:</label>
+        <select
+          id="materia"
+          value={materia}
+          onChange={(e) => setMateria(e.target.value)}
+          required
+        >
+          <option value="">Selecione uma matéria</option>
+          {materiasDisponiveis.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.nome}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <div className="flashcard-actions">
-        <button className="flashcard-toggle-btn" onClick={toggleResposta}>
-          {mostrarResposta ? "Esconder resposta" : "Exibir resposta"}
+      <div className="form-actions">
+        <button onClick={handleSalvar} className="btn-salvar">
+          Salvar
         </button>
-        <button className="flashcard-next-btn" onClick={proximo}>
-          Próximo →
+        <button
+          onClick={handleExcluir}
+          className="btn-excluir"
+          style={{ marginLeft: "10px" }}
+        >
+          Excluir
+        </button>
+        <button
+          onClick={() => navigate("/resumos")}
+          className="btn-cancelar"
+          style={{ marginLeft: "10px" }}
+        >
+          Voltar
         </button>
       </div>
     </div>
   );
-};
+}
 
-export default FlashcardView;
+export default ResumoView;
