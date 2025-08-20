@@ -1,4 +1,5 @@
-const API_URL = process.env.REACT_APP_BACKEND_URL //|| "http://localhost:5000"; // backend roda na 5000
+const API_URL =
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 // Função auxiliar para requisições
 async function request(path, options = {}, includeAuth = false) {
