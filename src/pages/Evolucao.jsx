@@ -1,6 +1,6 @@
 // src/pages/Evolucao.jsx
 import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../config/config";
+import { API_BASE_URL } from "../config/config.js";
 import {
   BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
