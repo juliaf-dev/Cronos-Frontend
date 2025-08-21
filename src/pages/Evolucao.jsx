@@ -1,11 +1,11 @@
 // src/pages/Evolucao.jsx
 import React, { useEffect, useState } from "react";
-import { API_BASE_URL } from "../config/config.js";
 import {
   BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
-import '../css/evolucao.css';
+import "../css/evolucao.css";
 import { useAuth } from "../context/AuthContext";
+import { requestApi } from "../services/authServices.js"; // ✅ usar requestApi
 
 const Evolucao = () => {
   const [dados, setDados] = useState(null);
@@ -20,15 +20,11 @@ const Evolucao = () => {
           return;
         }
 
-        const res = await fetch(`${API_BASE_URL}/api/evolucao/painel/${user.id}`, {
-          credentials: "include",
-        });
+        const res = await requestApi(`/evolucao/painel/${user.id}`, { method: "GET" });
+        console.log("📥 Resposta painel:", res);
 
-        const data = await res.json();
-        console.log("📥 Resposta painel:", data);
-
-        if (data.ok) {
-          setDados(data.data);
+        if (res.ok) {
+          setDados(res.data);
         }
       } catch (err) {
         console.error("❌ Erro ao carregar painel de evolução:", err);
@@ -43,16 +39,11 @@ const Evolucao = () => {
     const ping = async () => {
       try {
         if (document.visibilityState === "visible") {
-          const res = await fetch(`${API_BASE_URL}/api/evolucao/ping`, {
-            method: "POST",
-            credentials: "include",
-          });
+          const res = await requestApi("/evolucao/ping", { method: "POST" });
+          console.log("⏱️ Ping resposta:", res);
 
-          const data = await res.json();
-          console.log("⏱️ Ping resposta:", data);
-
-          if (data.ok && data.data) {
-            setDados(prev => {
+          if (res.ok && res.data) {
+            setDados((prev) => {
               if (!prev) return prev;
 
               // Atualiza mapa diário
@@ -60,8 +51,8 @@ const Evolucao = () => {
               if (novoMapa.length > 0) {
                 novoMapa[novoMapa.length - 1] = {
                   ...novoMapa[novoMapa.length - 1],
-                  minutos_estudados: data.data.minutos,
-                  acessos: data.data.acessos,
+                  minutos_estudados: res.data.minutos,
+                  acessos: res.data.acessos,
                 };
               }
 
@@ -69,11 +60,11 @@ const Evolucao = () => {
                 ...prev,
                 resumo: {
                   ...prev.resumo,
-                  tempo_total: data.data.minutos,
-                  streak: data.data.streak,
-                  total_resumos: prev.resumo.total_resumos // mantém
+                  tempo_total: res.data.minutos,
+                  streak: res.data.streak,
+                  total_resumos: prev.resumo.total_resumos, // mantém
                 },
-                mapa: novoMapa
+                mapa: novoMapa,
               };
             });
           }
@@ -106,7 +97,9 @@ const Evolucao = () => {
         <div className="card">
           <h3>Progresso Geral</h3>
           <p>{resumo.progressoGeral ?? 0}%</p>
-          <small>{resumo.total_acertos ?? 0} acertos de {resumo.total_respondidas ?? 0} questões</small>
+          <small>
+            {resumo.total_acertos ?? 0} acertos de {resumo.total_respondidas ?? 0} questões
+          </small>
         </div>
         <div className="card">
           <h3>Tempo de Estudo</h3>
@@ -134,7 +127,7 @@ const Evolucao = () => {
       <div className="graficos-section">
         <h2>Desempenho por Matéria</h2>
         <div className="graficos-grid">
-          {(dados.desempenhoPorMateria && dados.desempenhoPorMateria.length > 0) ? (
+          {dados.desempenhoPorMateria && dados.desempenhoPorMateria.length > 0 ? (
             dados.desempenhoPorMateria.map((m, idx) => (
               <div key={idx} className="grafico-card">
                 <h3>{m.materia}</h3>

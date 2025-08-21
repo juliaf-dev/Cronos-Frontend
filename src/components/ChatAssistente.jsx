@@ -4,13 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComments, faCircleXmark, faPaperPlane, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
 import { API_BASE_URL } from '../config/config';
 
-function ChatAssistente({ materiaTopico }) {
+function ChatAssistente({ contexto }) {
   const [expandido, setExpandido] = useState(false);
   const [mensagens, setMensagens] = useState([
     { 
       origem: 'ia', 
-      conteudo: materiaTopico 
-        ? `Olá! Sou seu assistente de estudo. Posso te ajudar com alguma dúvida sobre o material?` 
+      conteudo: contexto?.conteudo 
+        ? `Olá! Sou seu assistente de estudo. Posso te ajudar com alguma dúvida sobre este conteúdo?` 
         : `Olá! Sou seu assistente de estudo. Posso te ajudar com alguma dúvida?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     },
@@ -45,14 +45,13 @@ function ChatAssistente({ materiaTopico }) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          mensagem: entrada,   // ✅ correto
-          contexto: materiaTopico || ""
+          mensagem: entrada,
+          contexto: contexto || {}   // 🔹 agora envia o objeto completo
         }),
       });
 
       const data = await res.json();
 
-      // ✅ Ajuste para suportar resposta em data.resposta OU data.data.resposta
       const resposta = data.resposta || data.data?.resposta || "Não consegui gerar uma resposta.";
 
       const novaMensagemIA = { 
@@ -74,9 +73,17 @@ function ChatAssistente({ materiaTopico }) {
     if (!texto || typeof texto !== "string") {
       return "<p>Não consegui gerar uma resposta.</p>";
     }
-    const partes = texto.split("\n").filter(p => p.trim());
+
+    // 🔹 Remove títulos grandes (<h1>, <h2>) e converte para <strong> dentro de <p>
+    let tratado = texto
+      .replace(/<h1.*?>/gi, "<p><strong>")
+      .replace(/<\/h1>/gi, "</strong></p>")
+      .replace(/<h2.*?>/gi, "<p><strong>")
+      .replace(/<\/h2>/gi, "</strong></p>");
+
+    const partes = tratado.split("\n").filter(p => p.trim());
     if (partes.length === 0) {
-      return `<p>${texto}</p>`;
+      return `<p>${tratado}</p>`;
     }
     return partes.map((p, i) => `<p key=${i}>${p}</p>`).join("");
   };

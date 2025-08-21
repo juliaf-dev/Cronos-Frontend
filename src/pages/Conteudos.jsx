@@ -27,7 +27,6 @@ function Conteudo({ voltarParaMain }) {
       try {
         const token = localStorage.getItem("accessToken");
 
-        // 🔹 1) Busca conteúdos existentes
         const res = await fetch(
           `${API_BASE_URL}/api/conteudos/subtopico/${subtopicoId}`,
           {
@@ -40,33 +39,16 @@ function Conteudo({ voltarParaMain }) {
           }
         );
 
-        const search = await res.json();
+        const data = await res.json();
 
-        if (search.ok && search.data?.length) {
-          setConteudoBD(search.data[0]);
-          return;
-        }
-
-        // 🔹 2) Se não existe, pede geração automática
-        const resGen = await fetch(`${API_BASE_URL}/api/conteudos/generate`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          credentials: "include",
-          body: JSON.stringify({ subtopico_id: subtopicoId }),
-        });
-
-        const gen = await resGen.json();
-        if (gen.ok) {
-          setConteudoBD(gen.data);
+        if (data.ok && data.data) {
+          setConteudoBD(data.data);
         } else {
-          setErro("Não foi possível gerar conteúdo.");
+          setErro(data.message || "Não foi possível carregar conteúdo.");
         }
       } catch (err) {
-        console.error("Erro ao carregar/gerar conteúdo:", err);
-        setErro("Não foi possível carregar ou gerar o conteúdo.");
+        console.error("Erro ao carregar conteúdo:", err);
+        setErro("Erro de conexão ao carregar o conteúdo.");
       } finally {
         setCarregando(false);
       }
@@ -75,32 +57,31 @@ function Conteudo({ voltarParaMain }) {
     carregarConteudo();
   }, [subtopicoId]);
 
-const irParaCriarResumo = () => {
-  if (!conteudoBD) return;
-  navigate("/criar-resumo", {
-    state: {
-      conteudo: {
-        id: conteudoBD.id, // ✅ agora enviando conteudo_id
-        materiaId: conteudoBD.materia_id, // ✅ usado no CriarResumo
-        subtopicoId,
-        tituloSugerido: conteudoBD?.titulo || conteudoBD?.subtopico_nome,
-        bodyBase: conteudoBD?.body || "",
+  const irParaCriarResumo = () => {
+    if (!conteudoBD) return;
+    navigate("/criar-resumo", {
+      state: {
+        conteudo: {
+          id: conteudoBD.id,
+          materiaId: conteudoBD.materia_id,
+          subtopicoId: conteudoBD.subtopico_id,
+          tituloSugerido: conteudoBD?.subtopico_nome,
+          bodyBase: conteudoBD?.body || "",
+        },
       },
-    },
-  });
-};
-
+    });
+  };
 
   const irParaQuiz = () => {
     if (!conteudoBD) return;
     navigate("/quiz", {
       state: {
         conteudo: {
-          conteudo_id: conteudoBD.id,              // ✅ agora padronizado
+          conteudo_id: conteudoBD.id,
           materia_id: conteudoBD.materia_id,
           topico_id: conteudoBD.topico_id,
           subtopico_id: conteudoBD.subtopico_id,
-          titulo: conteudoBD.titulo || conteudoBD.subtopico_nome,
+          titulo: conteudoBD.subtopico_nome,
         },
       },
     });
@@ -112,11 +93,12 @@ const irParaCriarResumo = () => {
         ← Voltar
       </button>
 
-      <h1>
-        {[conteudoBD?.materia_nome, conteudoBD?.topico_nome, conteudoBD?.subtopico_nome]
-          .filter(Boolean)
-          .join(" · ")}
-      </h1>
+      {conteudoBD && (
+        <div className="cabecalho-conteudo">
+          <span className="tag-materia">{conteudoBD?.materia_nome}</span>
+          <h1>{conteudoBD?.subtopico_nome}</h1>
+        </div>
+      )}
 
       <div className="conteudo-texto">
         {carregando ? (
@@ -141,7 +123,13 @@ const irParaCriarResumo = () => {
 
       {conteudoBD && (
         <ChatAssistente
-          materiaTopico={`${conteudoBD?.materia_nome} | ${conteudoBD?.topico_nome} | ${conteudoBD?.subtopico_nome}`}
+          contexto={{
+            conteudo_id: conteudoBD.id, // 🔹 agora o back pode buscar também pelo ID
+            materia: conteudoBD?.materia_nome,
+            topico: conteudoBD?.topico_nome,
+            subtopico: conteudoBD?.subtopico_nome,
+            conteudo: conteudoBD?.body, // 🔹 envia o conteúdo completo
+          }}
         />
       )}
     </div>

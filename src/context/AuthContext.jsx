@@ -1,6 +1,6 @@
+// src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
-import { me, refresh, logout } from "../services/authServices";
-import { API_BASE_URL } from "../config/config.js";
+import { me, refresh, logout, requestApi } from "../services/authServices";
 
 const AuthContext = createContext();
 
@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
         if (data.ok && data.data) {
           setUser(data.data);
           localStorage.setItem("user", JSON.stringify(data.data));
-          localStorage.setItem("userId", data.data.id); // 🔑 útil para evolução
+          localStorage.setItem("userId", data.data.id);
         } else {
           // Se não deu, tenta renovar sessão via refresh
           const r = await refresh();
@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
           }
         }
       } catch (err) {
-        console.error("Erro ao checar auth:", err);
+        console.error("❌ Erro ao checar auth:", err);
         setUser(null);
         localStorage.removeItem("user");
         localStorage.removeItem("userId");
@@ -51,13 +51,10 @@ export function AuthProvider({ children }) {
     if (user) {
       const ping = async () => {
         try {
-          await fetch(`${API_BASE_URL}/api/evolucao/ping`, {
-            method: "POST",
-            credentials: "include", // mantém cookie de sessão
-            headers: { "Content-Type": "application/json" },
-          });
+          const resp = await requestApi("/evolucao/ping", { method: "POST" });
+          console.log("⏱️ Ping resposta:", resp);
         } catch (err) {
-          console.error("Erro no ping de evolução:", err);
+          console.error("❌ Erro no ping de evolução:", err);
         }
       };
 

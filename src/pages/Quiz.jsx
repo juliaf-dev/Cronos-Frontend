@@ -6,7 +6,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../css/Quiz.css";
 
-// 📊 Import da barra circular
 import {
   CircularProgressbar,
   buildStyles,
@@ -41,6 +40,8 @@ function Quiz() {
 
     try {
       const token = localStorage.getItem("accessToken");
+      const usuarioId = localStorage.getItem("userId");
+
       const res = await fetch(`${API_BASE_URL}/api/quiz/sessoes`, {
         method: "POST",
         headers: {
@@ -48,15 +49,43 @@ function Quiz() {
           Authorization: `Bearer ${token}`,
         },
         credentials: "include",
-        body: JSON.stringify({ conteudo_id: conteudo.conteudo_id }),
+        body: JSON.stringify({
+          conteudo_id: conteudo.conteudo_id,
+          usuario_id: usuarioId,
+        }),
       });
 
       const data = await res.json();
-      if (!res.ok || data.error)
+
+      if (!res.ok || data.error) {
+        if (res.status === 400) {
+          toast.warn(data.message || "Não foi possível gerar quiz com 10 questões.");
+          navigate("/main");
+          return;
+        }
         throw new Error(data.message || "Erro ao criar sessão");
+      }
+
+      // 🔹 Normalizar questões e alternativas
+      const questoesNormalizadas = (data.quiz.questoes || []).map((q) => ({
+        ...q,
+        enunciado: q.enunciado?.trim() || "Enunciado indisponível",
+        alternativas: (q.alternativas || []).map((alt, idx) => {
+          if (typeof alt === "string") {
+            const letra = alt.trim().charAt(0).toUpperCase();
+            const texto = alt.replace(/^[A-E]\)\s*/i, "").trim();
+            return { id: `${q.id}-${letra}`, letra, texto };
+          }
+          return {
+            id: alt.id || `${q.id}-${alt.letra}`,
+            letra: alt.letra,
+            texto: alt.texto,
+          };
+        }),
+      }));
 
       setQuizId(data.quiz.quiz_id);
-      setQuestoes(data.quiz.questoes || []);
+      setQuestoes(questoesNormalizadas);
     } catch (err) {
       setErro(err.message);
     } finally {
@@ -184,7 +213,7 @@ function Quiz() {
     <div className="quiz-container">
       <h2>Quiz do Conteúdo: {conteudo?.titulo}</h2>
 
-      {!finalizado && questoes.length > 0 && (
+      {!finalizado && questoes.length > 0 && questaoAtual && (
         <>
           {/* Barra de progresso linear */}
           <div className="progress-bar">
