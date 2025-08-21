@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_BASE_URL } from "../config/config";
-
 import "../css/CriarFlashcards.css";
+import BotaoVoltar from "../components/BotaoVoltar";
 
 function CriarFlashcard() {
   const navigate = useNavigate();
@@ -132,7 +132,14 @@ function CriarFlashcard() {
 
   return (
     <div className="criar-flashcard-container">
-      <h2>{vindoDoConteudo ? "Criar Flashcard do Conteúdo" : "Criar Novo Flashcard"}</h2>
+      {/* 🔹 Header com botão voltar e título centralizado */}
+      <div className="flashcards-header">
+        <BotaoVoltar />
+        <h2 className="flashcard-title">
+          {vindoDoConteudo ? "Criar Flashcard do Conteúdo" : "Criar Novo Flashcard"}
+        </h2>
+        <div style={{ width: "80px" }}></div> {/* placeholder p/ equilibrar */}
+      </div>
 
       {message && <p className="success-message">{message}</p>}
       {error && <p className="error-message">{error}</p>}

@@ -20,15 +20,15 @@
 
 /* Header */
 .flashcards-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* 🔑 esquerda | centro | direita */
+  align-items: center;                  /* centraliza verticalmente */
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 2px solid #f5e1d3;
-  flex-wrap: wrap;
   gap: 12px;
 }
+
 
 .flashcard-title {
   color: #5b4031;
@@ -36,40 +36,12 @@
   font-weight: 700;
   margin: 0;
   text-align: center;
-  flex: 1;
+  flex: 1;                        /* 🔑 ocupa espaço central */
+  display: flex;
+  justify-content: center;        /* centraliza o texto */
+  align-items: center;            /* centraliza verticalmente */
 }
 
-/* Botão Novo Flashcard */
-.btn-adicionar {
-  background: linear-gradient(135deg, #7a533a 0%, #b06c49 100%);
-  color: #f2f1e7;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 10px rgba(122, 83, 58, 0.25);
-}
-
-.btn-adicionar:hover {
-  background: linear-gradient(135deg, #b06c49 0%, #7a533a 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(122, 83, 58, 0.3);
-}
-
-.btn-adicionar:active {
-  transform: translateY(0);
-  box-shadow: 0 3px 8px rgba(122, 83, 58, 0.25);
-}
-
-.btn-adicionar svg {
-  font-size: 1rem;
-}
 
 /* Lista de pastas */
 .pastas-lista {

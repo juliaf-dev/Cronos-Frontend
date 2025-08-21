@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../css/Perfil.css";
+import BotaoVoltar from "../components/BotaoVoltar";
 
 function Perfil() {
   const { user, setUser } = useAuth();
@@ -59,7 +60,8 @@ function Perfil() {
 
   return (
     <div className="perfil-container">
-      <h2>Meu Perfil</h2>
+     <BotaoVoltar />
+           <h2>Meu Perfil</h2>
 
       {message && <p className="perfil-message">{message}</p>}
 

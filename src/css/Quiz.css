@@ -1,4 +1,4 @@
-/* Quiz Container */
+/* Container */
 .quiz-container {
   max-width: 950px;
   margin: 0 auto;
@@ -8,7 +8,7 @@
 }
 
 .quiz-container h2 {
-  font-size: 1.8rem;
+  font-size: 1.9rem;
   font-weight: 700;
   color: #7a533a;
   text-align: center;
@@ -30,7 +30,7 @@
   transition: width 0.3s ease;
 }
 
-/* Card da questão */
+/* Questão */
 .questao-card {
   background: #fefaf3;
   border: 2px solid #b26a40;
@@ -40,11 +40,12 @@
   margin-top: 12px;
 }
 
-.questao-card h3 {
-  font-size: 1.2rem;
+.questao-card .enunciado {
+  font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 16px;
   text-align: justify;
+  line-height: 1.5;
 }
 
 /* Alternativas */
@@ -54,7 +55,6 @@
   gap: 12px;
 }
 
-/* Botão base das alternativas */
 .alternativa-btn {
   border: none;
   padding: 12px 20px;
@@ -62,14 +62,14 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  background: #ccc;
+  background: #e0d6c9;
   color: #333;
   transition: all 0.25s ease;
   text-align: left;
 }
 
 .alternativa-btn:hover:not(:disabled) {
-  background: #999;
+  background: #b26a40;
   color: white;
 }
 
@@ -102,16 +102,15 @@
   line-height: 1.5;
 }
 
-/* Área de botões principais */
+/* Ações */
 .quiz-actions {
   display: flex;
-  justify-content: space-between; /* 🔥 um em cada canto */
+  justify-content: space-between;
   align-items: center;
   margin-top: 20px;
   gap: 12px;
 }
 
-/* Botões principais */
 .btn-expandir,
 .btn-flashcard,
 .btn-proxima,
@@ -140,24 +139,6 @@
   box-shadow: 0 6px 14px rgba(178, 106, 64, 0.35);
 }
 
-/* Esconde o texto dos botões em telas menores */
-@media (max-width: 600px) {
-  .btn-expandir span,
-  .btn-flashcard span,
-  .btn-proxima span,
-  .btn-finalizar span {
-    display: none; /* só mostra o ícone */
-  }
-
-  .btn-expandir,
-  .btn-flashcard,
-  .btn-proxima,
-  .btn-finalizar {
-    padding: 12px; /* reduz padding */
-    justify-content: center;
-  }
-}
-
 /* Resumo final */
 .quiz-resumo {
   margin-top: 24px;
@@ -181,7 +162,7 @@
   margin: 6px 0;
 }
 
-/* Responsivo geral */
+/* Responsivo */
 @media (max-width: 768px) {
   .questao-card {
     padding: 18px;

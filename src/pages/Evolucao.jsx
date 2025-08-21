@@ -5,7 +5,8 @@ import {
 } from "recharts";
 import "../css/evolucao.css";
 import { useAuth } from "../context/AuthContext";
-import { requestApi } from "../services/authServices.js"; // ✅ usar requestApi
+import { requestApi } from "../services/authServices.js";
+import BotaoVoltar from "../components/BotaoVoltar";
 
 const Evolucao = () => {
   const [dados, setDados] = useState(null);
@@ -46,7 +47,6 @@ const Evolucao = () => {
             setDados((prev) => {
               if (!prev) return prev;
 
-              // Atualiza mapa diário
               let novoMapa = [...(prev.mapa || [])];
               if (novoMapa.length > 0) {
                 novoMapa[novoMapa.length - 1] = {
@@ -62,7 +62,7 @@ const Evolucao = () => {
                   ...prev.resumo,
                   tempo_total: res.data.minutos,
                   streak: res.data.streak,
-                  total_resumos: prev.resumo.total_resumos, // mantém
+                  total_resumos: prev.resumo.total_resumos,
                 },
                 mapa: novoMapa,
               };
@@ -74,10 +74,7 @@ const Evolucao = () => {
       }
     };
 
-    // 🔹 Primeiro ping imediato
     ping();
-
-    // 🔹 Depois a cada 1 minuto
     const interval = setInterval(ping, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -90,7 +87,12 @@ const Evolucao = () => {
 
   return (
     <div className="evolucao-container">
-      <h2>Painel de Evolução</h2>
+      {/* 🔹 Header padronizado */}
+      <div className="flashcards-header">
+        <BotaoVoltar />
+        <h2 className="flashcard-title">Painel de Evolução</h2>
+        <div style={{ width: "80px" }}></div> {/* placeholder para alinhar */}
+      </div>
 
       {/* Resumo rápido */}
       <div className="resumo-cards">

@@ -5,6 +5,8 @@ import FlashcardRandon from "../components/FlashcardRandon";
 import ResumoAtalhos from "../components/ResumoAtalhos";
 import ChatAssistente from "../components/ChatAssistente";
 import { API_BASE_URL } from "../config/config";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { iconesMaterias } from "../components/iconesMaterias";
 
 const Main = ({ navegarParaMateria }) => {
   const [materiasData, setMateriasData] = useState([]);
@@ -46,17 +48,24 @@ const Main = ({ navegarParaMateria }) => {
         <div className="disciplinas">
           <h3>Estude por Disciplina</h3>
           <div className="disciplinas-grid">
-            {materiasData.map((materia) => (
-            <div
-              key={materia.id}
-              className="disciplina-card"
-              onClick={() => navegarParaMateria(materia)}   // ✅ usa a função recebida por props
-            >
-              <h2>{materia.nome}</h2>
-              <p>{materia.total_topicos} tópicos</p>
-            </div>
+            {materiasData.map((materia) => {
+              const iconeMateria =
+                iconesMaterias[materia.nome] || iconesMaterias.Geral;
 
-            ))}
+              return (
+                <div
+                  key={materia.id}
+                  className="disciplina-card"
+                  onClick={() => navegarParaMateria(materia)} // ✅ usa a função recebida por props
+                >
+                  <div className="disciplina-icon">
+                    <FontAwesomeIcon icon={iconeMateria} size="2x" />
+                  </div>
+                  <h2>{materia.nome}</h2>
+                  <p>{materia.total_topicos} tópicos</p>
+                </div>
+              );
+            })}
           </div>
         </div>
 

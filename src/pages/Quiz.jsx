@@ -1,16 +1,29 @@
-// src/pages/Quiz.jsx
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../css/Quiz.css";
+import BotaoVoltar from "../components/BotaoVoltar";
 
 import {
   CircularProgressbar,
   buildStyles,
 } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+
+// 🔹 Sanitização mínima
+function sanitizeHTML(texto) {
+  let clean = String(texto || "")
+    .replace(/```html|```/gi, "")
+    .replace(/<h1[^>]*>.*?<\/h1>/gi, "")
+    .trim();
+
+  if (!/(<p>|<h2>|<ul>|<li>)/i.test(clean)) {
+    clean = `<p>${clean}</p>`;
+  }
+  return clean;
+}
 
 function Quiz() {
   const location = useLocation();
@@ -66,20 +79,19 @@ function Quiz() {
         throw new Error(data.message || "Erro ao criar sessão");
       }
 
-      // 🔹 Normalizar questões e alternativas
       const questoesNormalizadas = (data.quiz.questoes || []).map((q) => ({
         ...q,
-        enunciado: q.enunciado?.trim() || "Enunciado indisponível",
-        alternativas: (q.alternativas || []).map((alt, idx) => {
+        enunciado: sanitizeHTML(q.enunciado || "Enunciado indisponível"),
+        alternativas: (q.alternativas || []).map((alt) => {
           if (typeof alt === "string") {
             const letra = alt.trim().charAt(0).toUpperCase();
             const texto = alt.replace(/^[A-E]\)\s*/i, "").trim();
-            return { id: `${q.id}-${letra}`, letra, texto };
+            return { id: `${q.id}-${letra}`, letra, texto: sanitizeHTML(texto) };
           }
           return {
             id: alt.id || `${q.id}-${alt.letra}`,
             letra: alt.letra,
-            texto: alt.texto,
+            texto: sanitizeHTML(alt.texto),
           };
         }),
       }));
@@ -121,7 +133,7 @@ function Quiz() {
         [questaoId]: {
           correta: data.correta,
           message: data.message,
-          explicacao: data.explicacao || "Sem explicação disponível.",
+          explicacao: sanitizeHTML(data.explicacao || "Sem explicação disponível."),
           corretaLetra: data.letra_correta,
         },
       }));
@@ -150,8 +162,8 @@ function Quiz() {
 
       const flashPayload = {
         materia_id: materiaId,
-        pergunta: String(questao.enunciado),
-        resposta: String(correta.texto),
+        pergunta: questao.enunciado,
+        resposta: correta.texto,
       };
 
       const res = await fetch(`${API_BASE_URL}/api/flashcards`, {
@@ -211,11 +223,14 @@ function Quiz() {
 
   return (
     <div className="quiz-container">
-      <h2>Quiz do Conteúdo: {conteudo?.titulo}</h2>
+      <div className="quiz-header">
+        <BotaoVoltar />
+        <h2>Quiz do Conteúdo: {conteudo?.titulo}</h2>
+      </div>
 
       {!finalizado && questoes.length > 0 && questaoAtual && (
         <>
-          {/* Barra de progresso linear */}
+          {/* Barra de progresso */}
           <div className="progress-bar">
             <div className="progress" style={{ width: `${progresso}%` }}></div>
           </div>
@@ -223,10 +238,13 @@ function Quiz() {
             Questão {currentIndex + 1} de {questoes.length}
           </p>
 
-          {/* Questão atual */}
           <div className="questao-card">
-            <h3>{questaoAtual.enunciado}</h3>
+            <div
+              className="enunciado"
+              dangerouslySetInnerHTML={{ __html: questaoAtual.enunciado }}
+            />
 
+            {/* 🔹 Antes de expandir → só o botão */}
             {!mostrarAlternativas ? (
               <button
                 className="btn-expandir"
@@ -235,78 +253,87 @@ function Quiz() {
                 ▼ Mostrar alternativas
               </button>
             ) : (
-              <div className="alternativas">
-                {questaoAtual.alternativas?.map((alt) => {
-                  const userAnswer = respostas[questaoAtual.id];
-                  const fb = feedback[questaoAtual.id];
-                  const isCorreta = fb?.corretaLetra === alt.letra;
-                  const isSelecionada = userAnswer === alt.letra;
+              <>
+                <div className="alternativas">
+                  {questaoAtual.alternativas?.map((alt) => {
+                    const userAnswer = respostas[questaoAtual.id];
+                    const fb = feedback[questaoAtual.id];
+                    const isCorreta = fb?.corretaLetra === alt.letra;
+                    const isSelecionada = userAnswer === alt.letra;
 
-                  return (
-                    <button
-                      key={alt.id}
-                      className={`alternativa-btn 
-                        ${isSelecionada ? "selecionada" : ""}
-                        ${
-                          fb
-                            ? isCorreta
-                              ? "correta"
-                              : isSelecionada
-                              ? "errada"
+                    return (
+                      <button
+                        key={alt.id}
+                        className={`alternativa-btn 
+                          ${isSelecionada ? "selecionada" : ""}
+                          ${
+                            fb
+                              ? isCorreta
+                                ? "correta"
+                                : isSelecionada
+                                ? "errada"
+                                : ""
                               : ""
-                            : ""
-                        }`}
-                      onClick={() =>
-                        responderQuestao(questaoAtual.id, alt.id, alt.letra)
-                      }
-                      disabled={!!fb}
-                    >
-                      {alt.letra}) {alt.texto}
-                    </button>
-                  );
-                })}
-              </div>
+                          }`}
+                        onClick={() =>
+                          responderQuestao(questaoAtual.id, alt.id, alt.letra)
+                        }
+                        disabled={!!fb}
+                        dangerouslySetInnerHTML={{
+                          __html: `${alt.letra}) ${alt.texto}`,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* 🔹 Criar flashcard aparece junto das alternativas */}
+                <div className="flashcard-inline">
+                  <button
+                    className="btn-flashcard"
+                    onClick={() => criarFlashcard(questaoAtual)}
+                  >
+                    ➕ Criar Flashcard
+                  </button>
+                </div>
+              </>
             )}
 
             {feedback[questaoAtual.id] && (
               <div className="feedback">
                 <p>{feedback[questaoAtual.id].message}</p>
-                <p>
-                  <strong>Explicação:</strong>{" "}
-                  {feedback[questaoAtual.id].explicacao}
-                </p>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: `<strong>Explicação:</strong> ${feedback[questaoAtual.id].explicacao}`,
+                  }}
+                />
               </div>
             )}
 
-            <button
-              className="btn-flashcard"
-              onClick={() => criarFlashcard(questaoAtual)}
-            >
-              ➕ Criar Flashcard
-            </button>
-
-            {feedback[questaoAtual.id] && currentIndex < questoes.length - 1 && (
-              <button
-                className="btn-proxima"
-                onClick={() => {
-                  setCurrentIndex((i) => i + 1);
-                  setMostrarAlternativas(false);
-                }}
-              >
-                ➡ Próxima questão
-              </button>
-            )}
-
-            {feedback[questaoAtual.id] && currentIndex === questoes.length - 1 && (
-              <button className="btn-finalizar" onClick={finalizarQuiz}>
-                🏁 Finalizar Quiz
-              </button>
+            {/* 🔹 Próxima / Finalizar fica separado */}
+            {feedback[questaoAtual.id] && (
+              <div className="quiz-actions">
+                {currentIndex < questoes.length - 1 ? (
+                  <button
+                    className="btn-proxima"
+                    onClick={() => {
+                      setCurrentIndex((i) => i + 1);
+                      setMostrarAlternativas(false);
+                    }}
+                  >
+                    ➡ Próxima
+                  </button>
+                ) : (
+                  <button className="btn-finalizar" onClick={finalizarQuiz}>
+                    🏁 Finalizar
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </>
       )}
 
-      {/* Resultado final com barra circular */}
       {finalizado && resultado && (
         <div className="quiz-resumo">
           <h3>✅ Resultado do Quiz</h3>

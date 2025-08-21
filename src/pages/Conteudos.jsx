@@ -1,11 +1,30 @@
-import { useEffect, useState } from "react";
+// src/pages/Conteudo.jsx
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaFileAlt, FaQuestionCircle } from "react-icons/fa";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { iconesMaterias } from "../components/iconesMaterias";
 import "../css/conteudos.css";
 import ChatAssistente from "../components/ChatAssistente";
 import { API_BASE_URL } from "../config/config";
+import BotaoVoltar from "../components/BotaoVoltar"; // ✅ novo componente
 
-function Conteudo({ voltarParaMain }) {
+// 🔹 Função auxiliar de sanitização
+function sanitizeHTML(texto) {
+  let clean = String(texto || "")
+    .replace(/```html|```/gi, "") // remove blocos de markdown
+    .replace(/<h1[^>]*>.*?<\/h1>/gi, "") // remove qualquer <h1>
+    .trim();
+
+  // Se não tiver nenhuma tag básica, envolve em <p>
+  if (!/(<p>|<h2>|<ul>|<li>)/i.test(clean)) {
+    clean = `<p>${clean}</p>`;
+  }
+
+  return clean;
+}
+
+function Conteudo() {
   const { subtopicoId } = useParams();
   const navigate = useNavigate();
 
@@ -57,6 +76,11 @@ function Conteudo({ voltarParaMain }) {
     carregarConteudo();
   }, [subtopicoId]);
 
+  // 🔹 Conteúdo sanitizado
+  const conteudoSanitizado = useMemo(() => {
+    return conteudoBD?.body ? sanitizeHTML(conteudoBD.body) : "";
+  }, [conteudoBD]);
+
   const irParaCriarResumo = () => {
     if (!conteudoBD) return;
     navigate("/criar-resumo", {
@@ -66,7 +90,7 @@ function Conteudo({ voltarParaMain }) {
           materiaId: conteudoBD.materia_id,
           subtopicoId: conteudoBD.subtopico_id,
           tituloSugerido: conteudoBD?.subtopico_nome,
-          bodyBase: conteudoBD?.body || "",
+          bodyBase: conteudoSanitizado,
         },
       },
     });
@@ -89,46 +113,53 @@ function Conteudo({ voltarParaMain }) {
 
   return (
     <div className="pagina-historica">
-      <button onClick={voltarParaMain} className="botao-voltar">
-        ← Voltar
-      </button>
+   
+    {conteudoBD && (
+      <div className="cabecalho-conteudo">
+        <BotaoVoltar />
+        <span className="tag-materia">
+          <FontAwesomeIcon
+            icon={iconesMaterias[conteudoBD?.materia_nome] || iconesMaterias.Geral}
+            className="materia-icon"
+          />
+          {conteudoBD?.materia_nome}
+        </span>
+      </div>
+    )}
+    <h1>{conteudoBD?.subtopico_nome}</h1>
 
-      {conteudoBD && (
-        <div className="cabecalho-conteudo">
-          <span className="tag-materia">{conteudoBD?.materia_nome}</span>
-          <h1>{conteudoBD?.subtopico_nome}</h1>
-        </div>
-      )}
 
       <div className="conteudo-texto">
         {carregando ? (
           <p>Carregando conteúdo...</p>
         ) : erro ? (
           <p className="erro">{erro}</p>
-        ) : conteudoBD?.body ? (
-          <div dangerouslySetInnerHTML={{ __html: conteudoBD.body }} />
+        ) : conteudoSanitizado ? (
+          <div dangerouslySetInnerHTML={{ __html: conteudoSanitizado }} />
         ) : (
           <p className="erro">Conteúdo indisponível.</p>
         )}
       </div>
 
-      <div className="acoes-conteudo">
-        <button onClick={irParaCriarResumo} className="botao-criar-resumo">
-          <FaFileAlt /> Criar Resumo
-        </button>
-        <button onClick={irParaQuiz} className="botao-quiz">
-          <FaQuestionCircle /> Fazer Quiz
-        </button>
-      </div>
+      {conteudoBD && (
+        <div className="acoes-conteudo">
+          <button onClick={irParaCriarResumo} className="botao-criar-resumo">
+            <FaFileAlt /> Criar Resumo
+          </button>
+          <button onClick={irParaQuiz} className="botao-quiz">
+            <FaQuestionCircle /> Fazer Quiz
+          </button>
+        </div>
+      )}
 
       {conteudoBD && (
         <ChatAssistente
           contexto={{
-            conteudo_id: conteudoBD.id, // 🔹 agora o back pode buscar também pelo ID
+            conteudo_id: conteudoBD.id,
             materia: conteudoBD?.materia_nome,
             topico: conteudoBD?.topico_nome,
             subtopico: conteudoBD?.subtopico_nome,
-            conteudo: conteudoBD?.body, // 🔹 envia o conteúdo completo
+            conteudo: conteudoSanitizado,
           }}
         />
       )}

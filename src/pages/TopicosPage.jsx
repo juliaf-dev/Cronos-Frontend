@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/config";
 import "../css/Topicos.css";
+import BotaoVoltar from "../components/BotaoVoltar";
 
 const TopicosPage = () => {
   const { materiaId } = useParams();
@@ -14,7 +15,6 @@ const TopicosPage = () => {
     const fetchTopicos = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        // ✅ rota correta no backend
         const res = await fetch(`${API_BASE_URL}/api/topicos/materia/${materiaId}`, {
           headers: { Authorization: `Bearer ${token}` },
           credentials: "include",
@@ -56,7 +56,12 @@ const TopicosPage = () => {
 
   return (
     <div className="topicos-container">
-      <h2>Tópicos da Matéria</h2>
+      {/* 🔹 Header padronizado */}
+      <div className="flashcards-header">
+        <BotaoVoltar />
+        <h2 className="flashcard-title">Tópicos da Matéria</h2>
+        <div style={{ width: "80px" }}></div> {/* placeholder para alinhar */}
+      </div>
 
       {topicos.length > 0 ? (
         topicos.map((topico) => (

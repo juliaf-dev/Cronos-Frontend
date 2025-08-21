@@ -7,6 +7,8 @@
   background-color: #f7f6f0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
+  width: 100%;       /* 🔥 garante largura total */
+  box-sizing: border-box; /* evita estourar por padding */
 }
 
 .nav-left {
@@ -147,7 +149,6 @@
 /* Monitores grandes (>= 1440px) */
 @media (min-width: 1440px) {
   .navbar {
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 1rem 3rem; /* 🔥 só aumenta respiro, sem limitar largura */
   }
 }

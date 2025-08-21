@@ -13,6 +13,8 @@ import {
   faLandmark,
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
+import BotaoVoltar from "../components/BotaoVoltar";
+import BotaoNovo from "../components/BotaoNovo";
 
 // 🔹 Ícones por matéria
 const icones = {
@@ -75,14 +77,14 @@ function Flashcards() {
     <div className="flashcards-page">
       <div className="flashcards-container">
         <div className="flashcards-header">
-          <div style={{ width: "80px" }}></div>
+          {/* 🔹 Botão voltar alinhado à esquerda */}
+          <BotaoVoltar />
+
+          {/* 🔹 Título sempre centralizado */}
           <h1 className="flashcard-title">Minhas Pastas de Flashcards</h1>
-          <button
-            onClick={() => navigate("/criar-flashcard")}
-            className="btn-adicionar"
-          >
-            <FontAwesomeIcon icon={faPlus} /> Novo Flashcard
-          </button>
+
+          {/* 🔹 Botão novo alinhado à direita */}
+          <BotaoNovo rota="/criar-flashcard" texto="Novo Flashcard" />
         </div>
 
         <div className="pastas-lista">

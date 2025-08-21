@@ -1,11 +1,13 @@
 /* src/css/Topicos.css */
 
 .topicos-container {
-  max-width: 1000px;
+  max-width: auto;
   margin: 0 auto;
   padding: 24px;
   font-family: 'Rajdhani', sans-serif;
   color: #5b4031;
+  background-color: #f7f6f0;
+ 
 }
 
 .topicos-container h2 {
@@ -21,10 +23,13 @@
   background: #fefaf3;
   border: 2px solid #b26a40;
   border-radius: 18px;
-  box-shadow: 0 6px 16px rgba(178, 106, 64, 0.2);
+  box-shadow: 0 6px 16px rgba(178, 106, 64, 0.2); 
+  margin: auto;
   margin-bottom: 18px;
   transition: all 0.3s ease;
   overflow: hidden;
+  max-width: 1000px; 
+ 
 }
 
 .topico-card:hover {

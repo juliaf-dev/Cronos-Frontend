@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_BASE_URL } from '../config/config';
 import '../css/CriarResumo.css';
-
+import BotaoVoltar from '../components/BotaoVoltar';
 
 function CriarResumo() {
   const navigate = useNavigate();
@@ -20,9 +20,7 @@ function CriarResumo() {
 
   const token = localStorage.getItem('accessToken');
 
-  /**
-   * Quando vem de um conteúdo → busca a matéria vinculada
-   */
+  // 🔹 Carregar matéria vinculada se veio de conteúdo
   useEffect(() => {
     if (!vindoDoConteudo || !conteudoState) return;
 
@@ -61,9 +59,7 @@ function CriarResumo() {
     carregarMateria();
   }, [vindoDoConteudo, conteudoState, token]);
 
-  /**
-   * Carrega todas as matérias (quando não vem de conteúdo)
-   */
+  // 🔹 Carregar matérias se criação manual
   useEffect(() => {
     if (vindoDoConteudo) return;
 
@@ -86,9 +82,7 @@ function CriarResumo() {
     fetchMaterias();
   }, [vindoDoConteudo, token]);
 
-  /**
-   * Salvar resumo
-   */
+  // 🔹 Salvar resumo
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -123,10 +117,9 @@ function CriarResumo() {
 
       setTimeout(() => {
         if (vindoDoConteudo) {
-          // 🚀 Navega para o quiz já com resumo e conteudo padronizado
           navigate('/quiz', {
             state: {
-              resumo: data.data, // {id, materia_id, titulo, corpo}
+              resumo: data.data,
               conteudo: {
                 conteudo_id: conteudoState.id,
                 materia_id: conteudoState.materia_id,
@@ -148,7 +141,14 @@ function CriarResumo() {
 
   return (
     <div className="criar-resumo-container">
-      <h2>{vindoDoConteudo ? 'Criar Resumo do Conteúdo' : 'Criar Novo Resumo'}</h2>
+      {/* 🔹 Header padronizado com botão voltar e título centralizado */}
+      <div className="flashcards-header">
+        <BotaoVoltar />
+        <h2 className="flashcard-title">
+          {vindoDoConteudo ? 'Criar Resumo do Conteúdo' : 'Criar Novo Resumo'}
+        </h2>
+        <div style={{ width: "80px" }}></div> {/* placeholder para equilibrar */}
+      </div>
 
       {message && <p className="success-message">{message}</p>}
       {error && <p className="error-message">{error}</p>}

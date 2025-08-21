@@ -3,11 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBook,
   faBrain,
-  faGlobe,
-  faLandmark,
-  faUsers,
   faCheckCircle,
   faClock,
   faEye,
@@ -15,15 +11,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { API_BASE_URL } from "../config/config";
 import { useAuth } from "../context/AuthContext";
+import { iconesMaterias } from "./iconesMaterias";
 import "../css/FlashcardViews.css";
-
-const icones = {
-  Filosofia: faBook,
-  Geografia: faGlobe,
-  História: faLandmark,
-  Sociologia: faUsers,
-  Geral: faBrain,
-};
 
 // ⏳ calcula tempo até revisão
 const tempoAteRevisao = (revisar_em) => {
@@ -49,7 +38,9 @@ const tempoAteRevisao = (revisar_em) => {
 const FlashcardView = () => {
   const { user } = useAuth();
   const { materiaId, id } = useParams();
+
   const [flashcards, setFlashcards] = useState([]);
+  const [materiaNome, setMateriaNome] = useState("Geral");
   const [indexAtual, setIndexAtual] = useState(0);
   const [mostrarResposta, setMostrarResposta] = useState(false);
 
@@ -90,6 +81,17 @@ const FlashcardView = () => {
         setFlashcards(lista);
         setIndexAtual(0);
         setMostrarResposta(false);
+
+        // 🔹 buscar nome da matéria a partir do primeiro flashcard
+        if (lista.length > 0 && lista[0].materia_id) {
+          const materiaRes = await fetch(`${API_BASE_URL}/api/materias/${lista[0].materia_id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (materiaRes.ok) {
+            const materiaData = await materiaRes.json();
+            setMateriaNome(materiaData?.data?.nome || "Geral");
+          }
+        }
       } catch (err) {
         console.error("❌ Erro ao carregar flashcards:", err);
       }
@@ -116,9 +118,7 @@ const FlashcardView = () => {
         });
 
         setFlashcards((prev) =>
-          prev.map((f, i) =>
-            i === indexAtual ? { ...f, revisado: true } : f
-          )
+          prev.map((f, i) => (i === indexAtual ? { ...f, revisado: true } : f))
         );
       } catch (err) {
         console.error("❌ Erro ao registrar resultado:", err);
@@ -154,17 +154,15 @@ const FlashcardView = () => {
 
   const flashcard = flashcards[indexAtual];
   const { texto, pendente } = tempoAteRevisao(flashcard.revisar_em);
+  const iconeMateria = iconesMaterias[materiaNome] || iconesMaterias.Geral;
 
   return (
     <div className="flashcard-view-container">
       <div className="flashcard-view">
         <div className="flashcard-view-top">
           <span className="flashcard-view-materia">
-            <FontAwesomeIcon
-              icon={icones[flashcard.materia] || faBrain}
-              className="materia-icon"
-            />
-            <span className="materia-text">{flashcard.materia || "Flashcards"}</span>
+            <FontAwesomeIcon icon={iconeMateria} className="materia-icon" />
+            <span className="materia-text">{materiaNome}</span>
           </span>
           <Link to="/flashcards" className="flashcard-view-voltar">
             Ver pastas

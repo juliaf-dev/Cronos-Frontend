@@ -1,0 +1,30 @@
+.botao-voltar {
+background: linear-gradient(135deg, #7a533a 0%, #b06c49 100%);
+  color: #f2f1e7;
+  border: none;
+  padding: 8px 14px;
+  margin: auto;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(122, 83, 58, 0.25);
+}
+
+.botao-voltar:hover {
+  background: linear-gradient(135deg, #b06c49 0%, #7a533a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(122, 83, 58, 0.3);
+}
+
+.botao-voltar:active {
+ transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(122, 83, 58, 0.25);
+}
+.botao-voltar svg {
+  font-size: 1rem;
+}

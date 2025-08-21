@@ -7,21 +7,57 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-   margin: 0px;
-  
+  margin: 0;
+}
+
+/* Cabeçalho */
+.cabecalho-conteudo {
+  display: flex;
+  justify-content: space-between;  /* ✅ Voltar à esquerda | Tag à direita */
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+
+
+.tag-materia {
+  background: linear-gradient(135deg, #7a533a 0%, #b06c49 100%);
+  color: #f2f1e7;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: auto;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(122, 83, 58, 0.25);
+}
+
+
+.materia-icon {
+  color: #dbb394 !important;
+  font-size: 1rem;
 }
 
 h1 {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #5d5d44; /* verde seco */
+  color: #5d5d44;
   margin-bottom: 20px;
   border-bottom: 3px solid #b26a40;
   padding-bottom: 6px;
   text-align: center;
   max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
+/* Corpo do conteúdo */
 .conteudo-texto {
   background-color: #f7f4eb;
   padding: 24px;
@@ -32,7 +68,6 @@ h1 {
   box-shadow: 0 4px 12px rgba(178, 106, 64, 0.1);
   max-width: 800px;
   width: 100%;
-  
 }
 
 .conteudo-texto p {
@@ -49,25 +84,16 @@ h1 {
   color: #4a4a4a;
 }
 
-.botao-voltar {
-  background: #b26a40;
-  color: #fff;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-bottom: 24px;
-  align-self: flex-start;
-  transition: background 0.3s, transform 0.2s;
+.erro {
+  color: #b91c1c;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 12px;
 }
 
-.botao-voltar:hover {
-  background: #94502f;
-  transform: translateY(-2px);
-}
+/* Botão voltar */
 
+/* Ações do conteúdo */
 .acoes-conteudo {
   display: flex;
   gap: 15px;
@@ -78,7 +104,6 @@ h1 {
 
 .botao-criar-resumo,
 .botao-quiz {
-  background-color: #5d5d44;
   color: #fffbe9;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
@@ -113,6 +138,7 @@ h1 {
   transform: translateY(-2px);
 }
 
+/* Responsividade */
 @media screen and (max-width: 768px) {
   .pagina-historica {
     padding: 20px 16px;
@@ -138,14 +164,4 @@ h1 {
     font-size: 0.95rem;
     width: 100%;
   }
-}
-.tag-materia {
-  display: inline-block;
-  background: #e5e7eb;
-  color: #111827;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
-  margin-bottom: 8px;
 }
