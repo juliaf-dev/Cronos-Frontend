@@ -80,16 +80,16 @@ function Resumos() {
             }
           />
 
-          <h1 className="flashcard-title">
-            {selectedMateria
-              ? selectedMateria.materia_nome
-              : "Minhas Pastas de Resumos"}
-          </h1>
+       
 
           <BotaoNovo rota="/criar-resumo" texto="Novo Resumo" />
 
         </div>
-
+   <h1 className="flashcard-title">
+            {selectedMateria
+              ? selectedMateria.materia_nome
+              : "Minhas Pastas de Resumos"}
+          </h1>
         {selectedMateria ? (
           <div className="pastas-lista">
             {selectedMateria.resumos.length > 0 ? (

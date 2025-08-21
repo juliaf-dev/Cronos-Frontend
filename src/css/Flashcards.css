@@ -29,7 +29,6 @@
   gap: 12px;
 }
 
-
 .flashcard-title {
   color: #5b4031;
   font-size: 1.8rem;
@@ -42,13 +41,33 @@
   align-items: center;            /* centraliza verticalmente */
 }
 
-
 /* Lista de pastas */
 .pastas-lista {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, 1fr); /* 🔹 padrão: 2 colunas no celular */
+  gap: 12px;
   margin-top: 30px;
+}
+
+/* fallback: telas muito estreitas (ex.: 320px) usam 1 coluna */
+@media (max-width: 360px) {
+  .pastas-lista { grid-template-columns: 1fr; }
+}
+
+/* ≥ 768px: mantém 2–3 colunas automaticamente */
+@media (min-width: 768px) {
+  .pastas-lista {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+}
+
+/* ≥ 1024px: mais espaço sem mudar o estilo do mobile */
+@media (min-width: 1024px) {
+  .pastas-lista {
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 .pasta-item {
@@ -57,7 +76,7 @@
   border-radius: 16px;
   padding: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -67,6 +86,7 @@
 }
 
 .pasta-item:hover {
+  background-color: #f5e1d3;
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(178, 106, 64, 0.25);
   border-color: #7a4f2a;
@@ -93,7 +113,7 @@
   margin: 0;
 }
 
-/* Responsividade */
+/* Responsividade do header */
 @media (max-width: 768px) {
   .flashcards-header {
     flex-direction: column;
@@ -109,4 +129,9 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+/* Acessibilidade: desliga animações p/ quem prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .pasta-item { transition: none; }
 }

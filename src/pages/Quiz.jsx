@@ -1,3 +1,4 @@
+// src/pages/Quiz.jsx
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/config";
@@ -5,14 +6,10 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../css/Quiz.css";
 import BotaoVoltar from "../components/BotaoVoltar";
-
-import {
-  CircularProgressbar,
-  buildStyles,
-} from "react-circular-progressbar";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
-// 🔹 Sanitização mínima
+// 🔹 Sanitização mínima (para exibir HTML)
 function sanitizeHTML(texto) {
   let clean = String(texto || "")
     .replace(/```html|```/gi, "")
@@ -23,6 +20,14 @@ function sanitizeHTML(texto) {
     clean = `<p>${clean}</p>`;
   }
   return clean;
+}
+
+// 🔹 Remove todas as tags para salvar em flashcards
+function stripHTML(html) {
+  return String(html || "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function Quiz() {
@@ -38,16 +43,30 @@ function Quiz() {
   const [erro, setErro] = useState(null);
   const [finalizado, setFinalizado] = useState(false);
   const [resultado, setResultado] = useState(null);
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mostrarAlternativas, setMostrarAlternativas] = useState(false);
 
-  // Criar sessão
+  // 🔹 Auxiliar para chamadas API com tratamento
+  const fetchApi = async (url, options = {}) => {
+    try {
+      const res = await fetch(url, options);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) {
+        throw new Error(data.message || `Erro na requisição (${res.status})`);
+      }
+      return data;
+    } catch (err) {
+      throw new Error(err.message || "Erro de conexão com o servidor.");
+    }
+  };
+
+  // Criar sessão de quiz
   const criarSessao = async () => {
     if (!conteudo) {
       setErro("Conteúdo não encontrado.");
       return;
     }
+
     setLoading(true);
     setErro(null);
 
@@ -55,7 +74,11 @@ function Quiz() {
       const token = localStorage.getItem("accessToken");
       const usuarioId = localStorage.getItem("userId");
 
-      const res = await fetch(`${API_BASE_URL}/api/quiz/sessoes`, {
+      if (!token || !usuarioId) {
+        throw new Error("Sessão inválida. Faça login novamente.");
+      }
+
+      const data = await fetchApi(`${API_BASE_URL}/api/quiz/sessoes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,17 +90,6 @@ function Quiz() {
           usuario_id: usuarioId,
         }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        if (res.status === 400) {
-          toast.warn(data.message || "Não foi possível gerar quiz com 10 questões.");
-          navigate("/main");
-          return;
-        }
-        throw new Error(data.message || "Erro ao criar sessão");
-      }
 
       const questoesNormalizadas = (data.quiz.questoes || []).map((q) => ({
         ...q,
@@ -99,7 +111,9 @@ function Quiz() {
       setQuizId(data.quiz.quiz_id);
       setQuestoes(questoesNormalizadas);
     } catch (err) {
+      toast.error(err.message);
       setErro(err.message);
+      navigate("/main");
     } finally {
       setLoading(false);
     }
@@ -109,7 +123,9 @@ function Quiz() {
   const responderQuestao = async (questaoId, alternativaId, letra) => {
     try {
       const token = localStorage.getItem("accessToken");
-      const res = await fetch(`${API_BASE_URL}/api/quiz/responder`, {
+      if (!token) throw new Error("Sessão expirada. Faça login novamente.");
+
+      const data = await fetchApi(`${API_BASE_URL}/api/quiz/responder`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,10 +139,6 @@ function Quiz() {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok || data.error)
-        throw new Error(data.message || "Erro ao responder");
-
       setRespostas((prev) => ({ ...prev, [questaoId]: letra }));
       setFeedback((prev) => ({
         ...prev,
@@ -138,6 +150,7 @@ function Quiz() {
         },
       }));
     } catch (err) {
+      toast.error(err.message);
       setErro(err.message);
     }
   };
@@ -146,6 +159,8 @@ function Quiz() {
   const criarFlashcard = async (questao) => {
     try {
       const token = localStorage.getItem("accessToken");
+      if (!token) throw new Error("Sessão expirada. Faça login novamente.");
+
       const corretaLetra = feedback[questao.id]?.corretaLetra;
       if (!corretaLetra) {
         toast.warn("⚠️ Responda a questão antes de criar o flashcard.");
@@ -158,15 +173,15 @@ function Quiz() {
       if (!correta) throw new Error("Não foi possível identificar a alternativa correta.");
 
       const materiaId = questao.materia_id ?? conteudo?.materia_id;
-      if (!materiaId) throw new Error("materia_id ausente no backend.");
+      if (!materiaId) throw new Error("Matéria não identificada.");
 
       const flashPayload = {
         materia_id: materiaId,
-        pergunta: questao.enunciado,
-        resposta: correta.texto,
+        pergunta: stripHTML(questao.enunciado), // 🔹 Texto puro
+        resposta: stripHTML(correta.texto),     // 🔹 Texto puro
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/flashcards`, {
+      await fetchApi(`${API_BASE_URL}/api/flashcards`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,10 +191,7 @@ function Quiz() {
         body: JSON.stringify(flashPayload),
       });
 
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.message || "Erro ao criar flashcard");
-
-      toast.success(data.message || "✅ Flashcard criado!");
+      toast.success("✅ Flashcard criado!");
     } catch (err) {
       toast.error(err.message);
     }
@@ -189,7 +201,9 @@ function Quiz() {
   const finalizarQuiz = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const res = await fetch(`${API_BASE_URL}/api/quiz/finalizar`, {
+      if (!token) throw new Error("Sessão expirada. Faça login novamente.");
+
+      const data = await fetchApi(`${API_BASE_URL}/api/quiz/finalizar`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -199,13 +213,10 @@ function Quiz() {
         body: JSON.stringify({ quiz_id: quizId }),
       });
 
-      const data = await res.json();
-      if (!res.ok || data.error)
-        throw new Error(data.message || "Erro ao finalizar");
-
       setResultado(data);
       setFinalizado(true);
     } catch (err) {
+      toast.error(err.message);
       setErro(err.message);
     }
   };
@@ -225,7 +236,7 @@ function Quiz() {
     <div className="quiz-container">
       <div className="quiz-header">
         <BotaoVoltar />
-        <h2>Quiz do Conteúdo: {conteudo?.titulo}</h2>
+        <h2>Quiz do Conteúdo: {conteudo?.titulo || "Sem título"}</h2>
       </div>
 
       {!finalizado && questoes.length > 0 && questaoAtual && (
@@ -244,7 +255,7 @@ function Quiz() {
               dangerouslySetInnerHTML={{ __html: questaoAtual.enunciado }}
             />
 
-            {/* 🔹 Antes de expandir → só o botão */}
+            {/* 🔹 Mostrar alternativas */}
             {!mostrarAlternativas ? (
               <button
                 className="btn-expandir"
@@ -310,7 +321,7 @@ function Quiz() {
               </div>
             )}
 
-            {/* 🔹 Próxima / Finalizar fica separado */}
+            {/* 🔹 Próxima / Finalizar */}
             {feedback[questaoAtual.id] && (
               <div className="quiz-actions">
                 {currentIndex < questoes.length - 1 ? (

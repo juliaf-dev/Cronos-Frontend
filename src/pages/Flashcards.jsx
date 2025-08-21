@@ -74,18 +74,17 @@ function Flashcards() {
 
   return (
     <div className="flashcards-page">
-      <div className="flashcards-container">
+      <div className="flashcards-container"> 
+   
         <div className="flashcards-header">
+         
           {/* 🔹 Botão voltar alinhado à esquerda */}
           <BotaoVoltar />
-
-          {/* 🔹 Título sempre centralizado */}
-          <h1 className="flashcard-title">Minhas Pastas de Flashcards</h1>
-
           {/* 🔹 Botão novo alinhado à direita */}
           <BotaoNovo rota="/criar-flashcard" texto="Novo Flashcard" />
         </div>
-
+     {/* 🔹 Título sempre centralizado */}
+          <h1 className="flashcard-title">Minhas Pastas de Flashcards</h1>
         <div className="pastas-lista">
           {flashcardsPorMateria.map((m) => (
             <div
