@@ -5,7 +5,6 @@ import { API_BASE_URL } from "../config/config";
 import { useAuth } from "../context/AuthContext";
 import "../css/Flashcards.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { iconesMaterias } from "../components/iconesMaterias";
 import BotaoVoltar from "../components/BotaoVoltar";
 import BotaoNovo from "../components/BotaoNovo";

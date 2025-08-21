@@ -23,9 +23,18 @@ function Login() {
       let data;
 
       if (isLogin) {
+        // fluxo normal de login
         data = await login({ email, senha });
       } else {
-        data = await register({ nome, email, senha });
+        // primeiro cadastra
+        const registerData = await register({ nome, email, senha });
+
+        if (!registerData.ok) {
+          throw new Error(registerData.message || "Erro no cadastro");
+        }
+
+        // depois faz login automático
+        data = await login({ email, senha });
       }
 
       console.log("🔐 LOGIN DATA:", data);
@@ -46,8 +55,8 @@ function Login() {
       // redireciona para página inicial do aluno
       navigate("/main");
     } catch (err) {
-      console.error("❌ Erro no login:", err);
-      setError(err.message || "Erro inesperado no login");
+      console.error("❌ Erro no login/cadastro:", err);
+      setError(err.message || "Erro inesperado no login/cadastro");
     }
   };
 

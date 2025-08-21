@@ -72,6 +72,8 @@ export async function login({ email, senha }) {
     body: JSON.stringify({ email, senha }),
   });
 
+  console.log("🔑 Resposta do login:", resp);
+
   if (resp.ok && resp.data?.accessToken) {
     localStorage.setItem("accessToken", resp.data.accessToken);
     localStorage.setItem("userId", resp.data.user?.id);
@@ -79,6 +81,7 @@ export async function login({ email, senha }) {
 
   return resp;
 }
+
 
 // Refresh do accessToken (via cookie refresh_token)
 export async function refresh() {

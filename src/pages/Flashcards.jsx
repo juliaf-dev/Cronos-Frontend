@@ -6,7 +6,6 @@ import "../css/Flashcards.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolder,
-  faPlus,
   faBook,
   faBrain,
   faGlobe,
