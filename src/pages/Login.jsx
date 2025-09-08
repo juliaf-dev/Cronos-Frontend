@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "../css/Login.css";
 import { login, register } from "../services/authServices";
 import { useAuth } from "../context/AuthContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 function Login() {
   const [nome, setNome] = useState("");
@@ -11,52 +13,47 @@ function Login() {
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
   const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // 👀 novo estado
 
   const navigate = useNavigate();
-  const { setUser } = useAuth(); // contexto global
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       let data;
 
       if (isLogin) {
-        // fluxo normal de login
         data = await login({ email, senha });
       } else {
-        // primeiro cadastra
         const registerData = await register({ nome, email, senha });
 
         if (!registerData.ok) {
           throw new Error(registerData.message || "Erro no cadastro");
         }
 
-        // depois faz login automático
         data = await login({ email, senha });
       }
 
-      console.log("🔐 LOGIN DATA:", data);
-
       if (!data.ok) throw new Error(data.message || "Algo deu errado");
 
-      // pega user dentro de data.data
       const user = data.data?.user;
-
       if (user) {
-        // salva no contexto e no localStorage apenas o userId
         setUser(user);
         localStorage.setItem("userId", user.id);
+        navigate("/main");
       } else {
         throw new Error("Usuário não retornado pela API");
       }
-
-      // redireciona para página inicial do aluno
-      navigate("/main");
     } catch (err) {
       console.error("❌ Erro no login/cadastro:", err);
       setError(err.message || "Erro inesperado no login/cadastro");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,18 +87,31 @@ function Login() {
             />
           </div>
 
-          <div className="form-group">
-            <label>Senha</label>
-            <input
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
-            />
-          </div>
+ <div className="form-group senha-group">
+  <label>Senha</label>
+  <div className="senha-wrapper">
+    <input
+      type={showPassword ? "text" : "password"}
+      value={senha}
+      onChange={(e) => setSenha(e.target.value)}
+      required
+    />
+    <button
+      type="button"
+      className="toggle-senha"
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+    </button>
+  </div>
+</div>
 
-          <button type="submit" className="login-button">
-            {isLogin ? "Entrar" : "Cadastrar"}
+          <button
+            type="submit"
+            className="login-button"
+            disabled={loading}
+          >
+            {loading ? "Carregando..." : isLogin ? "Entrar" : "Cadastrar"}
           </button>
         </form>
 

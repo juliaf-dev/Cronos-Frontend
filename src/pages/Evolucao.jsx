@@ -52,7 +52,6 @@ const Evolucao = () => {
                 novoMapa[novoMapa.length - 1] = {
                   ...novoMapa[novoMapa.length - 1],
                   minutos_estudados: res.data.minutos,
-                  acessos: res.data.acessos,
                 };
               }
 
@@ -83,7 +82,6 @@ const Evolucao = () => {
 
   const resumo = dados.resumo ?? {};
   const mapa = dados.mapa ?? [];
-  const acessosHoje = mapa.length > 0 ? mapa[mapa.length - 1].acessos : 0;
 
   return (
     <div className="evolucao-container">
@@ -107,11 +105,6 @@ const Evolucao = () => {
           <h3>Tempo de Estudo</h3>
           <p>{resumo.tempo_total ?? 0} min</p>
           <small>tempo total em atividade</small>
-        </div>
-        <div className="card">
-          <h3>Acessos</h3>
-          <p>{acessosHoje}</p>
-          <small>nº de acessos hoje</small>
         </div>
         <div className="card">
           <h3>Dias Seguidos</h3>

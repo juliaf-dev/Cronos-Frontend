@@ -10,25 +10,36 @@ const TopicosPage = () => {
   const navigate = useNavigate();
   const [topicos, setTopicos] = useState([]);
   const [expanded, setExpanded] = useState(null);
+  const [loading, setLoading] = useState(true); // 🔹 novo estado
+  const [error, setError] = useState(""); // 🔹 para capturar falhas
 
   useEffect(() => {
     const fetchTopicos = async () => {
+      setLoading(true);
+      setError("");
       try {
         const token = localStorage.getItem("accessToken");
-        const res = await fetch(`${API_BASE_URL}/api/topicos/materia/${materiaId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: "include",
-        });
+        const res = await fetch(
+          `${API_BASE_URL}/api/topicos/materia/${materiaId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
+          }
+        );
 
         const data = await res.json();
 
         if (data.ok && Array.isArray(data.data)) {
           setTopicos(data.data);
         } else {
+          setError("Resposta inesperada do servidor.");
           console.warn("Resposta inesperada:", data);
         }
       } catch (err) {
         console.error("Erro ao carregar tópicos:", err);
+        setError("Erro ao conectar com o servidor.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -60,20 +71,27 @@ const TopicosPage = () => {
       <div className="flashcards-header">
         <BotaoVoltar />
         <h2 className="flashcard-title">Tópicos da Matéria</h2>
-        <div style={{ width: "80px" }}></div> {/* placeholder para alinhar */}
+        <div style={{ width: "80px" }}></div>
       </div>
 
-      {topicos.length > 0 ? (
+      {/* 🔹 Estados de carregamento e erro */}
+      {loading ? (
+        <p>Carregando tópicos...</p>
+      ) : error ? (
+        <p className="error-message">{error}</p>
+      ) : topicos.length > 0 ? (
         topicos.map((topico) => (
           <div key={topico.id} className="topico-card">
-            <div className="topico-header" onClick={() => toggleExpand(topico.id)}>
+            <div
+              className="topico-header"
+              onClick={() => toggleExpand(topico.id)}
+            >
               <h3>{topico.nome}</h3>
               <button className="expand-btn">
                 {expanded === topico.id ? "−" : "+"}
               </button>
             </div>
 
-            {/* Se expandido → lista subtopicos */}
             {expanded === topico.id && (
               <div className="subtopicos-list">
                 {topico.subtopicos && topico.subtopicos.length > 0 ? (
